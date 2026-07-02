@@ -1,8 +1,8 @@
 /************************************************************************
  * @description Theme Library to apply light / dark / auto modes 
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/06/08
- * @version 1.9.0
+ * @date 2026/06/24
+ * @version 1.10.0
  ***********************************************************************/
 
 #Requires AutoHotkey v2.0
@@ -103,8 +103,8 @@ ApplyThemeToGui(guiObj) {
                     else
                         ctrlObj.Opt("c" . colors.TextDefault)
 
-                    if (ctrlObj.Type = "Text")
-                        ctrlObj.Opt("+Background" . colors.Bg)
+                    ;if (ctrlObj.Type = "Text")
+                     ;   ctrlObj.Opt("+Background" . colors.Bg)
 
                 case "Edit", "ListBox", "ComboBox", "DDL":
                     ctrlBg := colors.HasOwnProp("Ctrl") ? colors.Ctrl : colors.Bg

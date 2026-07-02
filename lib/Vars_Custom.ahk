@@ -7,110 +7,36 @@
 
 ;@region VARS
 ; CUSTOM VARIABLES
-
-global GuiToolTip := false
-global UseOSD := false
-global RenderInterval   := 10
-
-; ==============================================================================
-; INTERNAL STATE VARIABLES
-; ==============================================================================
-global CurrentVelocity   := 0.0
-global ResidualScroll    := 0.0
-global MainLastScrollTime    := 0
-global LastScrollTime    := 0
-global ScrollTimerActive := false
-global LastTimeTimeout := 1000
-
-; ==============================================================================
-; --- MOUSETABS RULES ---
-; ==============================================================================
-global TabAreaHeight    := 50    ; Height in pixels from the top of the window
-global EnabledTabApps   := Map(
-    "Chrome_WidgetWin_1", true,  ; Chrome, Edge, Brave, Opera, VS Code
-    "MozillaWindowClass", true,  ; Firefox
-    "Notepad++", true,           ; Notepad++
-    "CabinetWClass", true        ; Windows 11 File Explorer
-)
 ; ==============================================================================
 ; --- PROFILES ---
 ; ==============================================================================
-;global ProfileList := ["slow", "precise", "equilibrium", "long", "fast", "custom_1", "custom_2"]
-global ProfileList := ["slow", "precise", "equilibrium", "long", "fast", "mobile_flow", "mobile_flow2"]
-Global Wheel := {
-        Profile: "equilibrium"
-}
 
-;ApplyProfile(Wheel.Profile)
+Settings.ActiveProfile := "Equilibrium"
+Settings.Exclusions := "mspaint.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe"
+Settings.Custom_BaseSpeed :=        1.03
+Settings.Custom_BrakingFriction :=  0.10
+Settings.Custom_SpeedBoost :=       1.16
 
-ApplyProfile(Profile){
-    global
+global GlobalActiveProfile := "Equilibrium"
+global LiveExclusionMap := Map() ; The internal engine ONLY reads application blocks from this map
 
-    switch Profile {
-        case "slow":
-                BaseScrollAmount := 0.170
-                Friction         := 1.0869
-                FastSpinWindow   := 40.000
-                AccelRate        := 3.000
-                StopThreshold    := 0.080
-        case "precise":
-                BaseScrollAmount := 0.170
-                Friction         := 1.0869
-                FastSpinWindow   := 40.000
-                AccelRate        := 8.000
-                StopThreshold    := 0.080
-        case "equilibrium":
-                BaseScrollAmount := 0.170
-                Friction         := 1.066
-                FastSpinWindow   := 50.000
-                AccelRate        := 16.000
-                StopThreshold    := 0.101
-        case "long":
-                BaseScrollAmount := 0.170
-                Friction         := 1.0416
-                FastSpinWindow   := 50.000
-                AccelRate        := 16.000
-                StopThreshold    := 0.050
-        case "fast":
-                BaseScrollAmount := 0.170
-                Friction         := 1.066
-                FastSpinWindow   := 80.000
-                AccelRate        := 25.000
-                StopThreshold    := 0.101
-        case "custom_1":
-                BaseScrollAmount := 0.170
-                Friction         := 1.0582
-                FastSpinWindow   := 20.000
-                AccelRate        := 16.000
-                StopThreshold    := 0.100
-        case "custom_2":
-                BaseScrollAmount := 0.25
-                Friction         := 1.0526
-                FastSpinWindow   := 60
-                AccelRate        := 4
-                StopThreshold    := 0.07
-        case "mobile_flow":
-                BaseScrollAmount := 0.250
-                Friction         := 1.050
-                FastSpinWindow   := 18.000
-                AccelRate        := 38.000
-                StopThreshold    := 0.210
-        case "mobile_flow2":
-                BaseScrollAmount := 0.250
-                Friction         := 1.0489999999999999
-                FastSpinWindow   := 20.000
-                AccelRate        := 18.000
-                StopThreshold    := 0.110
-        }
-}
+global Profiles := Map(
+    "Slow",        {BaseSpeed: 0.84, BrakingFriction: 0.14, SpeedBoost: 0.60},
+    "Precise",     {BaseSpeed: 1.00, BrakingFriction: 0.16, SpeedBoost: 1.06},
+    "Equilibrium", {BaseSpeed: 1.08, BrakingFriction: 0.10, SpeedBoost: 1.14},
+    "Fast",        {BaseSpeed: 1.60, BrakingFriction: 0.10, SpeedBoost: 1.95},
+    "Dry",         {BaseSpeed: 1.40, BrakingFriction: 0.20, SpeedBoost: 1.80},
+    "Wet",         {BaseSpeed: 1.40, BrakingFriction: 0.06, SpeedBoost: 1.80},
+    "Custom",      {BaseSpeed: 1.03, BrakingFriction: 0.10, SpeedBoost: 1.16}
+)
 ;@endregion
 
-
-ResetSettings       := Settings.Clone()
+;ResetSettings       := Settings.Clone()
 ;ResetSettings       := Settings.Clone()
 ;ResetGeneral        := General.Clone()
 ;ResetOSDSettings    := OSDSettings.Clone()
 
+App.Github := "https://github.com/Melo-Professional/Scroll-Flow"
 ;App.NameCutted := "Template`nBigName"
 ;Settings.SplashScreen := "Icon"
 ;Debug := true
@@ -118,7 +44,37 @@ ResetSettings       := Settings.Clone()
 
 
 ;@region INI
-SaveToINI.Push("Wheel.Profile")     ; add more to INI file
+SaveToINI.Push("Settings.ActiveProfile",
+    "Settings.Exclusions",
+    "Settings.Custom_BaseSpeed",
+    "Settings.Custom_BrakingFriction",
+    "Settings.Custom_SpeedBoost")     ; add more to INI file
 RegisterArrayItems(SaveToINI)
 LoadINI()
+GlobalActiveProfile := Settings.ActiveProfile
+;KineticGui := 0
+
+class Physics {
+    static BaseSpeed := 1.00
+    static BrakingFriction := 0.10
+    static SpeedBoost := 1.04
+    
+    static Velocity := 0.0
+    static MomentumReservoir := 0.0
+}
+
+; ==============================================================================
+; --- INTERCEPTION ENGINE RUNTIME STATE BUFFER ---
+; ==============================================================================
+global TargetTopHWnd := 0
+global TargetCtrlHWnd := 0
+global PackedLParam := 0
+global ScrollMethod := "Win32HighPrecision"
+global AccV := 0.0
+
+global KineticGui := 0
+global AddAppsGui := 0
+global CatalogListBox := 0 
+global WorkingExclusions := "" 
+
 ;@endregion

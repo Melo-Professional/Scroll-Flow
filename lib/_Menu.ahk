@@ -173,5 +173,6 @@ StartMenu() {
     catch {
         RegWrite(1, "REG_DWORD", RegKeyPath, "FirstRun")
         TrayTip(App.Name " is now active and running in your system tray.", "Welcome!", "Mute " 36)
+        Global FirstRun := true
     }
 }

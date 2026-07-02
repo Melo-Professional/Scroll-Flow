@@ -14,7 +14,7 @@ ShowHelpGUI() {
     MyGui.SetFont("s" Settings.GuiFontSizeMedium, Settings.GuiFontName)
 
     ; Define layout constants
-    GuiWidth            := 540
+    GuiWidth            := 720
     BtnWidth            := 80
     MyGui.MarginX       := 50
     MyGui.MarginY       := 30
@@ -35,15 +35,14 @@ ShowHelpGUI() {
     MyGui.Add("Text", "y+2 vSmooth_Version", "Version " App.Version)
 
     ; 3. Content
-    MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300")
-    MyGui.Add("Text", "xm y+30 w" . (GuiWidth - (MyGui.MarginX * 2)), App.Description)
-
-
-    MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300")
-    MyGui.Add("Text", "xm y+20 w" . (GuiWidth - (MyGui.MarginX * 2)), "From tray icon menu / Profile, select your desired profile.")
+    MyGui.SetFont("s" Settings.GuiFontSizeBig " w300")
+    MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Select your preferred scrolling preset directly from the Tray Menu > Profiles.")
+    MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Open the main interface to fine-tune travel speed, friction, and fluid responsiveness.")
+    MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Exclude specific applications or programs that do not comfortably support smooth scrolling.")
 
     MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300")
-    MyGui.Add("Text", "xm y+15 w" . (GuiWidth - (MyGui.MarginX * 2)), "While scrolling, press middle mouse button to infinite scroll. Press again to stop.")
+    MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "*Press ScrollLock to suspend/ activate " . App.Name . ".")
+    MyGui.Add("Text", "xm y+30 w" . (GuiWidth - (MyGui.MarginX * 2)))
 
     ; 4. Button
     MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300", Settings.GuiFontName)
@@ -78,4 +77,41 @@ ShowHelpGUI() {
         try return HasMethod(%Name%)
         return false
     }
+}
+
+ShouldNormalizeScroll1() {
+    global LiveExclusionMap, KineticGui, AddAppsGui
+    CoordMode "Mouse", "Screen"
+    try {
+        MouseGetPos ,, &topHwnd
+        if (!topHwnd)
+            return true
+            
+        if (KineticGui != 0 && topHwnd == KineticGui.Hwnd)
+            return false
+        if (AddAppsGui != 0 && topHwnd == AddAppsGui.Hwnd)
+            return false
+            
+        rootHwnd := DllCall("GetAncestor", "Ptr", topHwnd, "UInt", 2, "Ptr")
+        targetHwnd := rootHwnd ? rootHwnd : topHwnd
+
+        topClass := WinGetClass(targetHwnd)
+        procName := WinGetProcessName(targetHwnd)
+        
+        if (topClass == "Shell_SecondaryTrayWnd" || topClass == "Shell_TrayWnd" || topClass == "NewStartServer")
+            return false
+            
+        if LiveExclusionMap.Has(StrLower(procName)) || LiveExclusionMap.Has(StrLower(topClass)) {
+            Physics.Velocity := 0.0
+            Physics.MomentumReservoir := 0.0
+            return false
+        }
+        
+        if (topClass == "ApplicationFrameWindow" || topClass == "Windows.UI.Core.CoreWindow" || InStr(topClass, "Windows.UI.XAML")) {
+            return false
+        }
+    } catch {
+        return true 
+    }
+    return true
 }

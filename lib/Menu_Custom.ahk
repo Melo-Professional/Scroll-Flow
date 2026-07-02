@@ -9,65 +9,31 @@
 
 Menu_Custom() {
 
-    TrayMenu := A_TrayMenu
+    global TrayMenu := A_TrayMenu
     MoreMenu := TrayMenu.HasProp("MoreMenu") ? TrayMenu.MoreMenu : ""
+    try MoreMenu.Delete("Pause")
+    try MoreMenu.Delete("Suspend")
+    try TrayMenu.Delete("Restart")
+    
+    TrayMenu.Insert("Exit", "Suspend`tScrollLock", (*) => ToggleSuspend())
+    TrayMenu.Insert("More", "Settings...", (*) => ShowKineticGUI())
 
-    global ProfileList
+    global ProfileMenu := Menu()
 
-    ProfileMenu := Menu()
-    ProfileMenu.Add("Tweaks...", (*) => CreateTweakerGui())
-    ProfileMenu.Add()
-    for name in ProfileList {
-        ProfileMenu.Add(name, ProfileHandler)
+    profilesOrder := ["Slow", "Precise", "Equilibrium", "Fast", "Dry", "Wet", "Custom"]
+
+    for profileName in profilesOrder {
+        ProfileMenu.Add(profileName, OnTrayProfileSelect)
     }
 
-    ProfileMenu.Check(Wheel.Profile)
+    try ProfileMenu.Check(GlobalActiveProfile)
 
-    TrayMenu.Insert("More","Profile", ProfileMenu)
+    TrayMenu.Insert("More","Profiles", ProfileMenu)
     TrayMenu.Insert("More")
 
-    ProfileHandler(ItemName, ItemPos, MyMenu) {
-        global Wheel, ProfileList
-        Wheel.Profile := ItemName
+    OnTrayProfileSelect(ItemName, ItemPos, MyMenu) {
         ApplyProfile(ItemName)
-        SaveINI()
-        for item in ProfileList {
-            isCurrent := (item == ItemName)
-            MyMenu.% isCurrent ? "Check" : "Uncheck" %(item)
-            MyMenu.% isCurrent ? "Disable" : "Enable" %(item)
-        }
+        SaveSettings()
     }
 
-
-
-
-
-
-    ; Custom items
-/*
-    ; INSERT AT POSITION
-    TrayMenu.Insert("3&", "Sound Control Panel", (*) => Run("control mmsys.cpl sounds"))
-    TrayMenu.Insert("4&", "Volume Mixer", (*) => Run("sndvol.exe"))
-    TrayMenu.Insert("5&")
- */
-
-    ; INSERT OVER 'More'
-;    TrayMenu.Insert("More", "Sound Control Panel", (*) => Run("control mmsys.cpl sounds"))
-;    TrayMenu.Insert("More", "Volume Mixer", (*) => Run("sndvol.exe"))
-;    TrayMenu.Insert("More")
-
-    ; Clean up Suspend and Pause
-;    if (MoreMenu != "") {
-;    try MoreMenu.Delete("4&")
-;    try MoreMenu.Delete("Suspend")
-;    try MoreMenu.Delete("Pause")
-;    }
-
-    IsFunctionDefined(Name) {
-        try return HasMethod(%Name%)
-        return false
-    }
 }
-
-;A_TrayMenu.Delete()
-
