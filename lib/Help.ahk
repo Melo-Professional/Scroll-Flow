@@ -37,12 +37,12 @@ ShowHelpGUI() {
     ; 3. Content
     MyGui.SetFont("s" Settings.GuiFontSizeBig " w300")
     MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Select your preferred scrolling preset directly from the Tray Menu > Profiles.")
-    MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Open the main interface to fine-tune travel speed, friction, and fluid responsiveness.")
+    MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Open the main interface to fine-tune speed, acceleration and breaking.")
     MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Exclude specific applications or programs that do not comfortably support smooth scrolling.")
 
     MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300")
-    MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "*Press ScrollLock to suspend/ activate " . App.Name . ".")
-    MyGui.Add("Text", "xm y+30 w" . (GuiWidth - (MyGui.MarginX * 2)))
+    MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "*Press ScrollLock to pause/ activate " . App.Name . ".")
+;    MyGui.Add("Text", "xm y+30 w" . (GuiWidth - (MyGui.MarginX * 2)))
 
     ; 4. Button
     MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300", Settings.GuiFontName)

@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/07/02
+ * @date 2026/07/07
  * @releasedate 2025/05/06
- * @version 3.1.0.0
+ * @version 3.2.6.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.1.0.0"
+AppVersion := "3.2.6.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -67,6 +67,11 @@ SyncEngineFromSettings()
 if IsSet(FirstRun){
     ShowKineticGUI()
 }
+
+if Settings.UseHotKey {
+    SetScrollLockState "On"
+}
+
 ;@endregion
 
 
@@ -122,7 +127,7 @@ SyncEngineFromSettings() {
 ApplyProfile(profileName) {
     global GlobalActiveProfile, ProfileMenu
     if !Profiles.Has(profileName)
-        profileName := "Equilibrium"
+        profileName := "Default"
         
     ; 1. Remove checkmark from the previously active profile
     if IsSet(ProfileMenu) {
@@ -179,22 +184,38 @@ SaveSettings() {
 $WheelUp::   HandleScroll(1)
 $WheelDown:: HandleScroll(-1)
 #HotIf
+/* 
+SetTimer CheckScrollLock, 100
 
-~ScrollLock::ToggleSuspend()
+CheckScrollLock() {
+    ; GetState returns 1 if ON, 0 if OFF
+    scrollState := GetKeyState("ScrollLock", "T") 
+    
+    if (scrollState == 1) {
+        ToolTip "Scroll Lock: ON"
+    } else {
+        ToolTip "Scroll Lock: OFF"
+    }
+}
+ */
+#HotIf Settings.UseHotKey
+ScrollLock::ToggleSuspend()
 ToggleSuspend() {
     Global Settings
+
+    TrayMenu := A_TrayMenu
     Settings.IsScriptPaused := !Settings.IsScriptPaused
     Physics.Velocity := 0.0
     Physics.MomentumReservoir := 0.0
 
     if (Settings.IsScriptPaused) {
-        Show_OSD( App.Name " Suspended")
+        Show_OSD( App.Name " Paused")
         SoundPlayWin("Speech Sleep")
-        try TrayMenu.Check("Suspend`tScrollLock")
+        try TrayMenu.Check("Pause`tScrollLock")
     } else {
         Show_OSD( App.Name " Active")
         SoundPlayWin("Speech On")
-        try TrayMenu.Uncheck("Suspend`tScrollLock")
+        try TrayMenu.Uncheck("Pause`tScrollLock")
     }
         if (A_IsCompiled && (Settings.IsScriptPaused || A_IsSuspended))
             TraySetIcon(App.IconPaused, -207, true)
@@ -203,6 +224,7 @@ ToggleSuspend() {
         else
         TraySetIcon(App.Icon,, true)
 }
+#HotIf
 ;@endregion
 
 ;@region Main
@@ -319,7 +341,7 @@ DetectMethod(ctrlHwnd, topHwnd) {
         ctrlClass := WinGetClass(ctrlHwnd)
         if (ctrlClass = "SysListView32")
             return "PixelLV"
-        if (ctrlClass = "SysTreeView32" || ctrlClass = "Edit" || ctrlClass = "ListBox" || InStr(ctrlClass, "RichEdit"))
+        if (ctrlClass = "SysTreeView32" || ctrlClass = "Edit" || ctrlClass = "ListBox" || ctrlClass = "ComboBox" || InStr(ctrlClass, "RichEdit"))
             return "LineScroll"
     }
     return "Win32HighPrecision" 
@@ -350,11 +372,17 @@ PhysicsTick() {
     AccV += Physics.Velocity
     
     if (Abs(AccV) > 0.01) {
+;        ToolTip(ScrollMethod)
         if (ScrollMethod = "PixelLV") {
             px := Integer(AccV * 4)
             if (px != 0) {
                 AccV -= (px / 4)
-                SendMessage(0x1014, 0, -px,, "ahk_id " TargetCtrlHWnd)
+                try {
+                    SendMessage(0x1014, 0, -px,, "ahk_id " TargetCtrlHWnd)
+                } catch {
+                    try WinActivate(TargetTopHWnd)
+                    try SendMessage(0x1014, 0, -px,, "ahk_id " TargetCtrlHWnd)
+                }
             }
         }
         else if (ScrollMethod = "LineScroll") {
@@ -363,19 +391,88 @@ PhysicsTick() {
                 AccV -= lines * 1.2
                 cmd := (lines > 0) ? 0 : 1 
                 Loop Abs(lines) {
-                    SendMessage(0x0115, cmd, 0,, "ahk_id " TargetCtrlHWnd)
+                    try {
+                        SendMessage(0x0115, cmd, 0,, "ahk_id " TargetCtrlHWnd)
+                    } catch {
+                        try WinActivate(TargetTopHWnd)
+                        try SendMessage(0x0115, cmd, 0,, "ahk_id " TargetCtrlHWnd)
+                    }
                 }
-                SendMessage(0x0115, 8, 0,, "ahk_id " TargetCtrlHWnd) 
+                try {
+                    SendMessage(0x0115, 8, 0,, "ahk_id " TargetCtrlHWnd)
+                } catch {
+                    try WinActivate(TargetTopHWnd)
+                    try SendMessage(0x0115, 8, 0,, "ahk_id " TargetCtrlHWnd)
+                }
             }
         }
-        else { 
+        else { ; Win32HighPrecision || BrowserHighPrecision
             step := Integer(AccV * 25)
             if (step != 0) {
                 AccV -= (step / 25)
                 wParam := (step << 16) & 0xFFFFFFFF 
-                PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " (ScrollMethod = "BrowserHighPrecision" ? TargetTopHWnd : TargetCtrlHWnd))
+                try {
+                    PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " (ScrollMethod = "BrowserHighPrecision" ? TargetTopHWnd : TargetCtrlHWnd))
+                } catch {
+                    try WinActivate(TargetTopHWnd)
+                    try PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " (ScrollMethod = "BrowserHighPrecision" ? TargetTopHWnd : TargetCtrlHWnd))
+                }
             }
         }
     }
 }
 ;@endregion
+
+
+/* TO DO
+* rename equilibrium to default
+* Rename Exceptions with subtitle "do not apply scroll effect to the programs bellow"
+* rename - Speed / Acceleration / Breaking
+* description under title
+* Suspend rename to pause
+* change also in Help GUI(speed acceleration breaking pause
+* App name in title of GUI is without space
+* Remover explore from more menu
+* MAIN MENU
+*     Options >>
+*         Settings
+*         Profile
+*     More >>
+*         Start on boot
+*         Help
+*         About
+*     Pause
+*     Exit
+* remove restart and theme from menu
+* help gui - too big, remove empty bottom space
+* equilibrium more dry to stop
+* be sure scrolllock pass real state to system
+
+option turn on/off hotkey
+warn if someone tries to delete default exceptions
+in explorer.exe it feels lagging to start and stop the movement. maybe apply dry profile on those apps.
+colors of groupbox and columns title
+add explorer.exe to exception list 'CabinetWClass'
+Open GitHub Project
+*/
+
+/*
+static ProcessIsElevated(vPID) {
+    local hProc, hToken, vIsElevated, vRet
+    ;PROCESS_QUERY_LIMITED_INFORMATION := 0x1000
+    if !(hProc := DllCall("OpenProcess", "UInt", 0x1000, "Int",0, "UInt",vPID, "Ptr"))
+        return -1
+    ;TOKEN_QUERY := 0x8
+    if !(DllCall("advapi32\OpenProcessToken", "Ptr", hProc, "UInt",0x8, "Ptr*", &hToken:=0)) {
+        DllCall("CloseHandle", "Ptr", hProc)
+        return -1
+    }
+    ;TokenElevation := 20
+    vRet := (DllCall("advapi32\GetTokenInformation", "Ptr", hToken, "Int", 20, "UInt*", &vIsElevated:=0, "UInt", 4, "UInt*", &vSize:=0))
+    DllCall("CloseHandle", "Ptr",hToken)
+    DllCall("CloseHandle", "Ptr",hProc)
+    return vRet ? vIsElevated : -1
+}
+
+
+*/

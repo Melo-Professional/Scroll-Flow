@@ -1,12 +1,12 @@
 /************************************************************************
  * @description Kinetic Settings GUI
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/07/01
- * @version 1.0.0
+ * @date 2026/07/04
+ * @version 1.1.0
  ***********************************************************************/
 
 ShowKineticGUI() {
-    global KineticGui, ProfileDDL, SpeedSlider, FrictionSlider, BoostSlider
+    global KineticGui, ProfileDDL, SpeedSlider, FrictionSlider, BoostSlider, optUseHotKey
     global SpeedText, FrictionText, BoostText, ExclusionBox, WorkingExclusions
     global LiveExclusionMap
     
@@ -21,7 +21,7 @@ ShowKineticGUI() {
         return
     }
     
-    KineticGui := Gui(, "ScrollFlow Settings")
+    KineticGui := Gui(, App.Name " Settings")
     KineticGui.SetFont("s10", "Segoe UI")
     
     KineticGui.OnEvent("Close", CancelAndRestoreValues)
@@ -29,47 +29,50 @@ ShowKineticGUI() {
     
     ; ---------------- LEFT COLUMN: PHYSICAL ENGINE TUNING ----------------
     KineticGui.AddGroupBox("x20 y15 w430 h80", "Preset Profile Template")
-    ProfileDDL := KineticGui.AddDropDownList("x40 y42 w390 Choose1", ["Slow", "Precise", "Equilibrium", "Fast", "Dry", "Wet", "Custom"])
+    ProfileDDL := KineticGui.AddDropDownList("x40 y42 w390 Choose1", ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"])
     ProfileDDL.OnEvent("Change", OnProfileChange)
     
     KineticGui.AddGroupBox("x20 y115 w430 h400", "Live Kinetic Engine Settings")
     
     KineticGui.SetFont("bold")
-    SpeedText := KineticGui.AddText("x40 y145 w390", "Base Travel Speed: 1.00")
+    SpeedText := KineticGui.AddText("x40 y145 w390", "Speed: 1.00")
+    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.AddText("x40 y170 w380", "Controls distance traveled on single, isolated wheel clicks. Lower values allow exact micro-adjustments.")
     KineticGui.SetFont("norm")
-    SpeedSlider := KineticGui.AddSlider("x35 y170 w400 Range10-500 ToolTip", 100) 
+    SpeedSlider := KineticGui.AddSlider("x35 y205 w400 Range10-500 ToolTip", 100) 
     SpeedSlider.OnEvent("Change", OnSliderAdjustment)
-    KineticGui.SetFont("s9 c666666", "Segoe UI")
-    KineticGui.AddText("x40 y205 w380", "Controls distance traveled on single, isolated wheel clicks. Lower values allow exact micro-adjustments.")
     KineticGui.SetFont("s10 cDefault", "Segoe UI")
     
     KineticGui.SetFont("bold")
-    FrictionText := KineticGui.AddText("x40 y255 w390", "Braking Friction: 0.10")
-    KineticGui.SetFont("norm")
-    FrictionSlider := KineticGui.AddSlider("x35 y280 w400 Range1-50 ToolTip", 10) 
-    FrictionSlider.OnEvent("Change", OnSliderAdjustment)
+    BoostText := KineticGui.AddText("x40 y270 w390", "Acceleration: 1.04")
     KineticGui.SetFont("s9 c666666", "Segoe UI")
-    KineticGui.AddText("x40 y315 w380", "Determines how quickly scrolling slides to a stop. Higher values stop instantly; lower values provide a smooth glide.")
-    KineticGui.SetFont("s10 cDefault", "Segoe UI")
-    
-    KineticGui.SetFont("bold")
-    BoostText := KineticGui.AddText("x40 y365 w390", "Flick Acceleration (Sustained Boost): 1.04")
+    KineticGui.AddText("x40 y295 w380", "Sets the acceleration rate when spinning the wheel rapidly. Stays inactive during slow turns, but builds high velocity on large pages.")
     KineticGui.SetFont("norm")
-    BoostSlider := KineticGui.AddSlider("x35 y390 w400 Range10-500 ToolTip", 104) 
+    BoostSlider := KineticGui.AddSlider("x35 y330 w400 Range10-500 ToolTip", 104) 
     BoostSlider.OnEvent("Change", OnSliderAdjustment)
-    KineticGui.SetFont("s9 c666666", "Segoe UI")
-    KineticGui.AddText("x40 y425 w380", "Sets the acceleration rate when spinning the wheel rapidly. Stays inactive during slow turns, but builds high velocity on large pages.")
     KineticGui.SetFont("s10 cDefault", "Segoe UI")
     
+    KineticGui.SetFont("bold")
+    FrictionText := KineticGui.AddText("x40 y395 w390", "Braking: 0.10")
+    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.AddText("x40 y420 w380", "Determines how quickly scrolling slides to a stop. Higher values stop instantly; lower values provide a smooth glide.")
+    KineticGui.SetFont("norm")
+    FrictionSlider := KineticGui.AddSlider("x35 y455 w400 Range1-50 ToolTip", 10) 
+    FrictionSlider.OnEvent("Change", OnSliderAdjustment)
+    KineticGui.SetFont("s9 cDefault", "Segoe UI")
+
+    optUseHotKey := KineticGui.Add("Checkbox", "x30 y560", " Use ScrollLock Key to pause " App.Name)
+    optUseHotKey.Value := Settings.UseHotKey
+
     ; ---------------- RIGHT COLUMN: EXCLUSION INTERFACE ----------------
-    KineticGui.AddGroupBox("x475 y15 w320 h500", "Application Exclusion Filters")
-    KineticGui.AddText("x495 y45 w280", "Active Bypass Rules List:")
-    ExclusionBox := KineticGui.AddListBox("x495 y70 w280 h350")
+    KineticGui.AddGroupBox("x475 y15 w320 h500", "Exceptions")
+    KineticGui.AddText("x495 y45 w280", "Do not apply scroll effect to the programs below:")
+    ExclusionBox := KineticGui.AddListBox("x495 y88 w280 h350")
     
-    BtnAddCatalog := KineticGui.AddButton("x495 y435 w135 h42", "&Add Programs...")
+    BtnAddCatalog := KineticGui.AddButton("x495 y445 w135 h42", "&Add Programs...")
     BtnAddCatalog.OnEvent("Click", OpenAppCatalogModal)
     
-    BtnRem := KineticGui.AddButton("x640 y435 w135 h42", "&Remove Selected")
+    BtnRem := KineticGui.AddButton("x640 y445 w135 h42", "&Remove Selected")
     BtnRem.OnEvent("Click", RemoveTargetFromExclusions)
     
     ; ---------------- BOTTOM ALIGNED ACTIONS ----------------
@@ -88,19 +91,21 @@ ShowKineticGUI() {
 }
 
 UpdateKineticGUIElements() {
-    global ProfileDDL, SpeedSlider, FrictionSlider, BoostSlider, ExclusionBox, WorkingExclusions, GlobalActiveProfile
+    global ProfileDDL, SpeedSlider, FrictionSlider, BoostSlider, ExclusionBox, WorkingExclusions, GlobalActiveProfile, optUseHotKey
     global SpeedText, FrictionText, BoostText
     
     ProfileDDL.Text := GlobalActiveProfile
     
     SpeedSlider.Value := Integer(Physics.BaseSpeed * 100)
-    SpeedText.Text := "Base Travel Speed: " String(Format("{:.2f}", Physics.BaseSpeed))
-    
-    FrictionSlider.Value := Integer(Physics.BrakingFriction * 100)
-    FrictionText.Text := "Braking Friction: " String(Format("{:.2f}", Physics.BrakingFriction))
+    SpeedText.Text := "Speed: " String(Format("{:.2f}", Physics.BaseSpeed))
     
     BoostSlider.Value := Integer(Physics.SpeedBoost * 100)
-    BoostText.Text := "Flick Acceleration (Sustained Boost): " String(Format("{:.2f}", Physics.SpeedBoost))
+    BoostText.Text := "Acceleration: " String(Format("{:.2f}", Physics.SpeedBoost))
+    
+    FrictionSlider.Value := Integer(Physics.BrakingFriction * 100)
+    FrictionText.Text := "Braking: " String(Format("{:.2f}", Physics.BrakingFriction))
+
+    optUseHotKey.Value := Settings.UseHotKey
     
     ExclusionBox.Delete()
     loop parse, WorkingExclusions, "," {
@@ -124,20 +129,20 @@ OnSliderAdjustment(*) {
     }
     
     vSpeed := Round((SpeedSlider.Value / 100), 2)
-    vFric  := Round((FrictionSlider.Value / 100), 2)
     vBoost := Round((BoostSlider.Value / 100), 2)
+    vFric  := Round((FrictionSlider.Value / 100), 2)
     
     Profiles["Custom"].BaseSpeed := vSpeed
-    Profiles["Custom"].BrakingFriction := vFric
     Profiles["Custom"].SpeedBoost := vBoost
+    Profiles["Custom"].BrakingFriction := vFric
     
     Physics.BaseSpeed := vSpeed
-    Physics.BrakingFriction := vFric
     Physics.SpeedBoost := vBoost
+    Physics.BrakingFriction := vFric
 
-    SpeedText.Text := "Base Travel Speed: " String(Format("{:.2f}", vSpeed))
-    FrictionText.Text := "Braking Friction: " String(Format("{:.2f}", vFric))
-    BoostText.Text := "Flick Acceleration (Sustained Boost): " String(Format("{:.2f}", vBoost))
+    SpeedText.Text := "Speed: " String(Format("{:.2f}", vSpeed))
+    BoostText.Text := "Acceleration: " String(Format("{:.2f}", vBoost))
+    FrictionText.Text := "Braking: " String(Format("{:.2f}", vFric))
 }
 
 RemoveTargetFromExclusions(*) {
@@ -161,7 +166,7 @@ RemoveTargetFromExclusions(*) {
 }
 
 CommitChangesToIni(*) {
-    global KineticGui, WorkingExclusions, LiveExclusionMap
+    global KineticGui, WorkingExclusions, LiveExclusionMap, optUseHotKey, Settings
     
     LiveExclusionMap.Clear()
     loop parse, WorkingExclusions, "," {
@@ -169,6 +174,10 @@ CommitChangesToIni(*) {
         if (clean != "")
             LiveExclusionMap[clean] := true
     }
+
+    Settings.UseHotKey := optUseHotKey.Value
+
+
     
     SaveSettings()
     
@@ -210,7 +219,7 @@ CancelAndRestoreValues(*) {
 OpenAppCatalogModal(*) {
     global KineticGui, AddAppsGui, CatalogListBox
     
-    AddAppsGui := Gui("+Owner" KineticGui.Hwnd, "Add Programs to Exclusion List")
+    AddAppsGui := Gui("+Owner" KineticGui.Hwnd, "Add Programs to Exceptions List")
     AddAppsGui.SetFont("s10", "Segoe UI")
     
     AddAppsGui.OnEvent("Close", (*) => (AddAppsGui.Destroy(), AddAppsGui := 0))
@@ -316,3 +325,22 @@ BrowseForExecutableFile(*) {
     AddAppsGui.Destroy()
     AddAppsGui := 0
 }
+/* 
+    KineticGui.SetFont("bold")
+    BoostText := KineticGui.AddText("x40 y365 w390", "Acceleration: 1.04")
+    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.AddText("x40 y390 w380", "Sets the acceleration rate when spinning the wheel rapidly. Stays inactive during slow turns, but builds high velocity on large pages.")
+    KineticGui.SetFont("norm")
+    BoostSlider := KineticGui.AddSlider("x35 y425 w400 Range10-500 ToolTip", 104) 
+    BoostSlider.OnEvent("Change", OnSliderAdjustment)
+    KineticGui.SetFont("s10 cDefault", "Segoe UI")
+    
+    KineticGui.SetFont("bold")
+    FrictionText := KineticGui.AddText("x40 y255 w390", "Braking: 0.10")
+    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.AddText("x40 y280 w380", "Determines how quickly scrolling slides to a stop. Higher values stop instantly; lower values provide a smooth glide.")
+    KineticGui.SetFont("norm")
+    FrictionSlider := KineticGui.AddSlider("x35 y315 w400 Range1-50 ToolTip", 10) 
+    FrictionSlider.OnEvent("Change", OnSliderAdjustment)
+    KineticGui.SetFont("s10 cDefault", "Segoe UI")
+     */
