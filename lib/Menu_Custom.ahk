@@ -26,8 +26,9 @@ Menu_Custom() {
         try MoreMenu.Delete("Explore")
     }
 
-    TrayMenu.Insert("Exit", "Pause`tScrollLock", (*) => ToggleSuspend())
 ;    TrayMenu.Insert("Pause`tScrollLock", "")
+    ;TrayMenu.Insert("Exit", "Pause`tScrollLock", (*) => ToggleSuspend())
+    TrayMenu.Insert("Exit", "Pause", (*) => ToggleSuspend())
 
     global OptionsMenu := Menu()
     A_TrayMenu.OptionsMenu := OptionsMenu
@@ -54,7 +55,11 @@ Menu_Custom() {
         ; 0x201 = WM_LBUTTONDOWN (Single left click)
         ; 0x203 = WM_LBUTTONDBLCLK (Double left click)
         if (lParam = 0x201 || lParam = 0x203) {
-            ShowKineticGUI()
+            if (Settings.TrayIconClick == "Settings") {
+                ShowKineticGUI()
+            } else {
+                ToggleSuspend()
+            }
             return 1  ; <-- CRITICAL: Tells Windows "I handled this", blocking the menu!
         }
     }

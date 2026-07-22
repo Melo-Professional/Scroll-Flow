@@ -12,7 +12,9 @@
 ; ==============================================================================
 
 Settings.ActiveProfile := "Default"
+Settings.TrayIconClick := "Settings"
 Settings.UseHotKey := true
+Settings.HotKey := "ScrollLock"
 Settings.Exclusions := "mspaint.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe"
 Settings.Custom_BaseSpeed :=        1.03
 Settings.Custom_BrakingFriction :=  0.10
@@ -46,7 +48,9 @@ App.Github := "https://github.com/Melo-Professional/Scroll-Flow"
 
 ;@region INI
 SaveToINI.Push("Settings.ActiveProfile",
+    "Settings.TrayIconClick",
     "Settings.UseHotKey",
+    "Settings.HotKey",
     "Settings.Exclusions",
     "Settings.Custom_BaseSpeed",
     "Settings.Custom_BrakingFriction",

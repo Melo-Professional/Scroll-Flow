@@ -3,17 +3,19 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/07/07
+ * @date 2026/07/20
  * @releasedate 2025/05/06
- * @version 3.2.6.0
+ * @version 3.3.2.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.2.6.0"
+AppVersion := "3.3.2.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
+
+;backupMode := "AppVersionAndMinutes"
 
 ;@region Directives
 #Requires AutoHotkey v2.0
@@ -33,12 +35,21 @@ A_HotkeyInterval := 1000
 
 ;@region Includes
 #Include *i <_CompilerDirectives>
+#Include *i <_Backup>
 #Include *i <_Config&Vars>
 #Include *i <_MsgBoxCustom>
 #Include *i <_SaveSettings>
 #Include *i <_Theme>
+;#Include *i <_FrostedTheme>
+#Include *i <_TitleBar>
+#Include *i <_ModernSlider>
+;#Include *i <_Color_Picker_Dialog>
+;#Include *i <_ReloadWithArgs>
+;#Include *i <_HotkeysRecorder>
+;#Include *i <_ODColors>
 #Include *i <_OSDCustom>
 ;#Include *i <_Color_Picker_Dialog_>
+#Include *i <_HotkeysRecorder>
 #Include *i <_SplashScreen>
 #Include *i <_About>
 ;#Include *i <_Help>
@@ -64,7 +75,7 @@ Menu_Custom()
 ; Execute the bridge mapping
 SyncEngineFromSettings()
 
-if IsSet(FirstRun){
+if IsSet(FirstRun) && FirstRun{
     ShowKineticGUI()
 }
 
@@ -184,25 +195,22 @@ SaveSettings() {
 $WheelUp::   HandleScroll(1)
 $WheelDown:: HandleScroll(-1)
 #HotIf
-/* 
-SetTimer CheckScrollLock, 100
 
-CheckScrollLock() {
-    ; GetState returns 1 if ON, 0 if OFF
-    scrollState := GetKeyState("ScrollLock", "T") 
-    
-    if (scrollState == 1) {
-        ToolTip "Scroll Lock: ON"
-    } else {
-        ToolTip "Scroll Lock: OFF"
-    }
+if (Settings.HotKey != "") {
+    try Hotkey( Settings.HotKey, ToggleSuspend)
 }
- */
-#HotIf Settings.UseHotKey
-ScrollLock::ToggleSuspend()
-ToggleSuspend() {
-    Global Settings
-
+;#HotIf Settings.UseHotKey
+ToggleSuspend(newHotkey := "", isGuiUpdate := false) {
+    global Settings
+    
+    ; 1. If it's a GUI update, save it to the INI and stop!
+    if (isGuiUpdate) {
+        Settings.HotKey := newHotkey
+        Settings.UseHotKey := (newHotkey == "") ? 0 : 1
+        SaveINI()
+        return
+    }
+    
     TrayMenu := A_TrayMenu
     Settings.IsScriptPaused := !Settings.IsScriptPaused
     Physics.Velocity := 0.0
@@ -224,7 +232,7 @@ ToggleSuspend() {
         else
         TraySetIcon(App.Icon,, true)
 }
-#HotIf
+;#HotIf
 ;@endregion
 
 ;@region Main
@@ -237,11 +245,11 @@ ShouldNormalizeScroll() {
 
     CoordMode "Mouse", "Screen"
     try {
-        MouseGetPos ,, &topHwnd
+        MouseGetPos ,, &topHwnd, &ctrlHwnd, 2 
         if (!topHwnd)
             return true
             
-        ; Updated to use your new 'KineticGui' variable name
+        ; Bypass if hovering over our own GUIs
         if (KineticGui != 0 && topHwnd == KineticGui.Hwnd)
             return false
         if (AddAppsGui != 0 && topHwnd == AddAppsGui.Hwnd)
@@ -263,23 +271,63 @@ ShouldNormalizeScroll() {
             Physics.MomentumReservoir := 0.0
             return false
         }
+
+        ; ===================================================================
+        ; WINUI 3 / XAML ISLAND POPUP BRIDGE SAFEGUARD
+        ; ===================================================================
+        ; If Microsoft's modern popup bridge is active on the screen, immediately
+        ; yield and bypass physics so the OS handles the scroll naturally.
+        if WinExist("ahk_class Microsoft.UI.Content.PopupWindowSiteBridge") {
+            Physics.Velocity := 0.0
+            Physics.MomentumReservoir := 0.0
+            return false
+        }
+        ; ===================================================================
+
+        ; ===================================================================
+        ; INTERACTIVE CONTROL BYPASS
+        ; ===================================================================
+        if (ctrlHwnd) {
+            ctrlClass := WinGetClass(ctrlHwnd)
+
+            ; --- AHK GUI CONTROL SAFEGUARD ---
+            ; If the window is an AutoHotkey GUI, inspect the control's native AHK type
+           if (topClass == "AutoHotkeyGUI" && (ctrlClass == "Static" || InStr(ctrlClass, "Slider"))) {
+                Physics.Velocity := 0.0
+                Physics.MomentumReservoir := 0.0
+                return false
+            }
+            
+            ; Standard Non-AHK Control Exclusions
+
+            if (InStr(ctrlClass, "msctls_trackbar")  ; Standard Win32 Sliders
+             || InStr(ctrlClass, "Slider")           ; Common custom sliders
+             || InStr(ctrlClass, "ComboBox")         ; Standard ComboBoxes
+             || InStr(ctrlClass, "ComboLBox")        ; Dropdown List Boxes
+             || InStr(ctrlClass, "ScrollBar")        ; Individual scrollbar controls
+             || topClass == "#32768")                ; Windows standard Popup Menus
+            {
+                Physics.Velocity := 0.0
+                Physics.MomentumReservoir := 0.0
+                return false
+            }
+        }
+        ; ===================================================================
         
-        ; Layer 4: AUTOMATIC FULLSCREEN GAME DETECTION (With Browser Whitelist Exception)
+        ; Layer 4: AUTOMATIC FULLSCREEN GAME DETECTION
         WinGetPos(&wX, &wY, &wW, &wH, targetHwnd)
         style := WinGetStyle(targetHwnd)
         
-        ; 0x00C00000 is WS_CAPTION (Title bar removed when a game or full-screen app runs)
+        ; 0x00C00000 is WS_CAPTION
         if ((style & 0x00C00000) == 0) {
             if (wW >= A_ScreenWidth && wH >= A_ScreenHeight) {
                 
-                ; Check if this borderless window is actually a web browser or document viewer
                 isScrollableApp := (procName = "chrome.exe" || procName = "firefox.exe" 
                                  || procName = "msedge.exe" || procName = "brave.exe" 
                                  || procName = "opera.exe"  || procName = "vivaldi.exe"
                                  || procName = "acrord32.exe" || procName = "foxitreader.exe"
                                  || InStr(topClass, "Chrome_") || InStr(topClass, "Mozilla"))
-                
-                ; If it is NOT a known web browser/reader, treat it as a game and bypass!
+                 
                 if (!isScrollableApp) {
                     Physics.Velocity := 0.0
                     Physics.MomentumReservoir := 0.0
@@ -422,57 +470,3 @@ PhysicsTick() {
     }
 }
 ;@endregion
-
-
-/* TO DO
-* rename equilibrium to default
-* Rename Exceptions with subtitle "do not apply scroll effect to the programs bellow"
-* rename - Speed / Acceleration / Breaking
-* description under title
-* Suspend rename to pause
-* change also in Help GUI(speed acceleration breaking pause
-* App name in title of GUI is without space
-* Remover explore from more menu
-* MAIN MENU
-*     Options >>
-*         Settings
-*         Profile
-*     More >>
-*         Start on boot
-*         Help
-*         About
-*     Pause
-*     Exit
-* remove restart and theme from menu
-* help gui - too big, remove empty bottom space
-* equilibrium more dry to stop
-* be sure scrolllock pass real state to system
-
-option turn on/off hotkey
-warn if someone tries to delete default exceptions
-in explorer.exe it feels lagging to start and stop the movement. maybe apply dry profile on those apps.
-colors of groupbox and columns title
-add explorer.exe to exception list 'CabinetWClass'
-Open GitHub Project
-*/
-
-/*
-static ProcessIsElevated(vPID) {
-    local hProc, hToken, vIsElevated, vRet
-    ;PROCESS_QUERY_LIMITED_INFORMATION := 0x1000
-    if !(hProc := DllCall("OpenProcess", "UInt", 0x1000, "Int",0, "UInt",vPID, "Ptr"))
-        return -1
-    ;TOKEN_QUERY := 0x8
-    if !(DllCall("advapi32\OpenProcessToken", "Ptr", hProc, "UInt",0x8, "Ptr*", &hToken:=0)) {
-        DllCall("CloseHandle", "Ptr", hProc)
-        return -1
-    }
-    ;TokenElevation := 20
-    vRet := (DllCall("advapi32\GetTokenInformation", "Ptr", hToken, "Int", 20, "UInt*", &vIsElevated:=0, "UInt", 4, "UInt*", &vSize:=0))
-    DllCall("CloseHandle", "Ptr",hToken)
-    DllCall("CloseHandle", "Ptr",hProc)
-    return vRet ? vIsElevated : -1
-}
-
-
-*/
