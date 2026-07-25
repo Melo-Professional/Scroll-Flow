@@ -11,18 +11,28 @@ ShowKineticGUI() {
     global LiveExclusionMap
     
     WorkingExclusions := ""
-    for exeName, _ in LiveExclusionMap {
-        WorkingExclusions .= (WorkingExclusions == "" ? "" : ",") exeName
+        for exeName, _ in LiveExclusionMap {
+            WorkingExclusions .= (WorkingExclusions == "" ? "" : ",") exeName
+        }
+
+/* 
+    try {
+        for exeName, _ in LiveExclusionMap {
+            WorkingExclusions .= (WorkingExclusions == "" ? "" : ",") exeName
+        }
+    } catch {
+        MsgBox("error")
     }
-    
+ */
+
     if (KineticGui != 0) {
         KineticGui.Show()
         UpdateKineticGUIElements()
         return
     }
     
-    KineticGui := Gui(, App.Name " Settings")
-    KineticGui.SetFont("s10", "Segoe UI")
+    KineticGui := Gui("AlwaysOnTop", App.Name " Settings")
+    KineticGui.SetFont("s10 Norm", "Segoe UI")
 
 
     KineticGui.OnEvent("Close", CancelAndRestoreValues)
@@ -31,73 +41,95 @@ ShowKineticGUI() {
     ; ---------------- LEFT COLUMN: PHYSICAL ENGINE TUNING ----------------
     KineticGui.AddGroupBox("x20 y15 w430 h80", "Preset Profile Template")
     KineticGui.SetFont("s11 w400")
-    ProfileDDL := KineticGui.AddDropDownList("x40 y42 w390 Choose1", ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"])
+;    ProfileDDL := KineticGui.AddDropDownList("x40 y42 w390 Choose1", ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"])
+    ProfileDDL := KineticGui.AddDropDownList("x40 y42 w390 Choose1", ProfileNames)
     ProfileDDL.OnEvent("Change", OnProfileChange)
 
-    KineticGui.SetFont("s10", "Segoe UI")
+    KineticGui.SetFont("s10 Norm", "Segoe UI")
     SendMessage(0x0153, -1, 24, ProfileDDL)
     SendMessage(0x0153, 0, 30, ProfileDDL)
 
     KineticGui.AddGroupBox("x20 y115 w430 h400", "Live Kinetic Engine Settings")
     
     KineticGui.SetFont("bold")
-    SpeedText := KineticGui.AddText("x40 y145 w390", "Speed: 1.00")
+    SpeedText := KineticGui.AddText("x40 y145 w390", "Speed: 1.000")
     KineticGui.SetFont("Norm")
-    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.SetFont("s9", "Segoe UI")
     KineticGui.AddText("VSmooth_speed x40 y170 w380", "Controls distance traveled on single, isolated wheel clicks. Lower values allow exact micro-adjustments.")
-    SpeedSlider := ModernSlider(KineticGui, "x35 y205 w400", 100, 10, 500, OnSliderAdjustment)
+    SpeedSlider := ModernSlider(KineticGui, "x35 y205 w400", 100, 10, 5000, OnSliderAdjustment)
 
     KineticGui.SetFont("s10 cDefault", "Segoe UI")
     
     KineticGui.SetFont("bold")
-    BoostText := KineticGui.AddText("x40 y270 w390", "Acceleration: 1.04")
+    BoostText := KineticGui.AddText("x40 y270 w390", "Acceleration: 1.040")
     KineticGui.SetFont("Norm")
-    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.SetFont("s9", "Segoe UI")
     KineticGui.AddText("VSmooth_accel x40 y295 w380", "Sets the acceleration rate when spinning the wheel rapidly. Stays inactive during slow turns, but builds high velocity on large pages.")
     KineticGui.SetFont("bold")
-    BoostSlider := ModernSlider(KineticGui, "x35 y330 w400", 104, 10, 500, OnSliderAdjustment)
+    BoostSlider := ModernSlider(KineticGui, "x35 y330 w400", 104, 10, 25000, OnSliderAdjustment)
     KineticGui.SetFont("s10 cDefault", "Segoe UI")
     
     KineticGui.SetFont("bold")
-    FrictionText := KineticGui.AddText("x40 y395 w390", "Braking: 0.10")
+    FrictionText := KineticGui.AddText("x40 y395 w390", "Breaking: 0.100")
     KineticGui.SetFont("norm")
-    KineticGui.SetFont("s9 c666666", "Segoe UI")
+    KineticGui.SetFont("s9", "Segoe UI")
     KineticGui.AddText("VSmooth_break x40 y420 w380", "Determines how quickly scrolling slides to a stop. Higher values stop instantly; lower values provide a smooth glide.")
-    FrictionSlider := ModernSlider(KineticGui, "x35 y455 w400", 10, 1, 50, OnSliderAdjustment)
-    KineticGui.SetFont("s9 cDefault", "Segoe UI")
+    FrictionSlider := ModernSlider(KineticGui, "x35 y455 w400", 10, 1, 500, OnSliderAdjustment)
+    KineticGui.SetFont("s10 Norm cDefault", "Segoe UI")
 
-    KineticGui.AddText("x30 y550 h25 0x0200", "Pause/ Activate:")
+;    KineticGui.AddText("x30 y530 h25 0x0200", "Pause/ Activate")
+    KineticGui.AddGroupBox("x20 y530 w430 h110", "Pause / Activate")
+
+;    KineticGui.SetFont("s9 cDefault w300", "Segoe UI")
+KineticGui.SetFont("s9 Norm cDefault ", "Segoe UI")
+    optLeftClick := KineticGui.Add("Checkbox", "x40 y565 w220", "  With left click at tray icon")
+    optLeftClick.Value := Settings.TrayIconClick
+optLeftClick.OnEvent("Click", ActionsLeftClickIcon)
+
+
+    KineticGui.AddText("x40 y600 h25 0x0200", "With Hotkey:    ")
 
     KineticGui.SetFont("s8 w700", "Segoe UI")
     HotKeyCtrl := KineticGui.Add("Button", "x+5 yp h25 w240")
     HotkeyManager.BindControl(HotKeyCtrl, Settings.HotKey, ToggleSuspend)
 
-    KineticGui.SetFont("s9 cDefault w300", "Segoe UI")
+
+
+    ActionsLeftClickIcon(*) {
+        Settings.TrayIconClick := optLeftClick.Value
+        SaveINI()
+        ReloadWithArgs("ShowKineticGUI")
+    }
+
+KineticGui.SetFont("s10 cDefault Norm", "Segoe UI")
 
     ; ---------------- RIGHT COLUMN: EXCLUSION INTERFACE ----------------
-    KineticGui.AddGroupBox("x475 y15 w320 h500", "Exceptions")
+    KineticGui.AddGroupBox("x475 y15 w320 h575", "Exceptions")
+
+KineticGui.SetFont("s9 cDefault Norm", "Segoe UI")
     KineticGui.AddText("x495 y45 w280", "Do not apply scroll effect to the programs below:")
-    ExclusionBox := KineticGui.AddListBox("x495 y88 w280 h350")
+    ExclusionBox := KineticGui.AddListBox("x495 y88 w280 h445")
     
-    BtnAddCatalog := KineticGui.AddButton("x495 y445 w135 h42", "&Add...")
+    BtnAddCatalog := KineticGui.AddButton("x495 y535 w135 h30", "&Add...")
     BtnAddCatalog.OnEvent("Click", OpenAppCatalogModal)
     
-    BtnRem := KineticGui.AddButton("x640 y445 w135 h42", "&Remove")
+    BtnRem := KineticGui.AddButton("x640 y535 w135 h30", "&Remove")
     BtnRem.OnEvent("Click", RemoveTargetFromExclusions)
     
     ; ---------------- BOTTOM ALIGNED ACTIONS ----------------
-    BtnSave := KineticGui.AddButton("x475 y535 w150 h40 +Default", "&Save")
+    BtnSave := KineticGui.AddButton("x645 y610 w150 h30 +Default", "&Save")
     BtnSave.OnEvent("Click", CommitChangesToIni)
     
-    BtnCancel := KineticGui.AddButton("x645 y535 w150 h40", "&Cancel")
-    BtnCancel.OnEvent("Click", CancelAndRestoreValues)
+;    BtnCancel := KineticGui.AddButton("x475 y610 w150 h30", "&Close")
+;    BtnCancel.OnEvent("Click", CancelAndRestoreValues)
     
     UpdateKineticGUIElements()
 
     ApplyThemeToGui(KineticGui)
     WatchedGUIs.Push(KineticGui)
 
-    KineticGui.Show("w815 h595")
+    ;KineticGui.Show("w815 h595")
+    KineticGui.Show("w815 h660")
 
 
 
@@ -113,9 +145,9 @@ ShowKineticGUI() {
             GlobalActiveProfile := "Custom"
         }
         
-        vSpeed := Round((SpeedSlider.Value / 100), 2)
-        vBoost := Round((BoostSlider.Value / 100), 2)
-        vFric  := Round((FrictionSlider.Value / 100), 2)
+        vSpeed := Round((SpeedSlider.Value / 1000), 3)
+        vBoost := Round((BoostSlider.Value / 1000), 3)
+        vFric  := Round((FrictionSlider.Value / 1000), 3)
         
         Profiles["Custom"].BaseSpeed := vSpeed
         Profiles["Custom"].SpeedBoost := vBoost
@@ -125,9 +157,9 @@ ShowKineticGUI() {
         Physics.SpeedBoost := vBoost
         Physics.BrakingFriction := vFric
 
-        SpeedText.Text := "Speed: " String(Format("{:.2f}", vSpeed))
-        BoostText.Text := "Acceleration: " String(Format("{:.2f}", vBoost))
-        FrictionText.Text := "Braking: " String(Format("{:.2f}", vFric))
+        SpeedText.Text := "Speed: " String(Format("{:.3f}", vSpeed))
+        BoostText.Text := "Acceleration: " String(Format("{:.3f}", vBoost))
+        FrictionText.Text := "Braking: " String(Format("{:.3f}", vFric))
     }
 
     RemoveTargetFromExclusions(*) {
@@ -234,19 +266,21 @@ ShowKineticGUI() {
         if (CatalogListBox.GetCount() == 0)
             CatalogListBox.Add(, "No active windows", "")
             
-        BtnBrowse := AddAppsGui.AddButton("x20 y375 w120 h38", "Select From File...")
-        BtnBrowse.OnEvent("Click", BrowseForExecutableFile)
+        BtnBrowse := AddAppsGui.AddButton("x20 y375 w120 h30", "Select From File...")
+;        BtnBrowse.OnEvent("Click", BrowseForExecutableFile)
+        BtnBrowse.OnEvent("Click", (*) => (AddAppsGui.Destroy(), BrowseForExecutableFile()))
         
-        BtnAddSelected := AddAppsGui.AddButton("x155 y375 w140 h38 +Default", "Add Selected")
+        BtnAddSelected := AddAppsGui.AddButton("x155 y375 w140 h30 +Default", "Add Selected")
         BtnAddSelected.OnEvent("Click", ProcessCatalogSelections)
         
-        BtnClose := AddAppsGui.AddButton("x310 y375 w120 h38", "Close")
+        BtnClose := AddAppsGui.AddButton("x310 y375 w120 h30", "Close")
         BtnClose.OnEvent("Click", (*) => (AddAppsGui.Destroy(), AddAppsGui := 0))
 
         ApplyThemeToGui(AddAppsGui)
         WatchedGUIs.Push(AddAppsGui)
 
-        AddAppsGui.Show("w450 h430")
+        AddAppsGui.Show("w450 h422")
+        ;AddAppsGui.Show("w450 h630")
     }
 
     ProcessCatalogSelections(*) {
@@ -322,14 +356,14 @@ UpdateKineticGUIElements() {
     
     ProfileDDL.Text := GlobalActiveProfile
     
-    SpeedSlider.Value := Integer(Physics.BaseSpeed * 100)
-    SpeedText.Text := "Speed: " String(Format("{:.2f}", Physics.BaseSpeed))
+    SpeedSlider.Value := Integer(Physics.BaseSpeed * 1000)
+    SpeedText.Text := "Speed: " String(Format("{:.3f}", Physics.BaseSpeed))
     
-    BoostSlider.Value := Integer(Physics.SpeedBoost * 100)
-    BoostText.Text := "Acceleration: " String(Format("{:.2f}", Physics.SpeedBoost))
+    BoostSlider.Value := Integer(Physics.SpeedBoost * 1000)
+    BoostText.Text := "Acceleration: " String(Format("{:.3f}", Physics.SpeedBoost))
     
-    FrictionSlider.Value := Integer(Physics.BrakingFriction * 100)
-    FrictionText.Text := "Braking: " String(Format("{:.2f}", Physics.BrakingFriction))
+    FrictionSlider.Value := Integer(Physics.BrakingFriction * 1000)
+    FrictionText.Text := "Braking: " String(Format("{:.3f}", Physics.BrakingFriction))
 
     ExclusionBox.Delete()
     loop parse, WorkingExclusions, "," {

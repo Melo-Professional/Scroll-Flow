@@ -12,10 +12,10 @@
 ; ==============================================================================
 
 Settings.ActiveProfile := "Default"
-Settings.TrayIconClick := "Settings"
+Settings.TrayIconClick := false
 Settings.UseHotKey := true
 Settings.HotKey := "ScrollLock"
-Settings.Exclusions := "mspaint.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe"
+Settings.Exclusions := "mspaint.exe,powertoys.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe"
 Settings.Custom_BaseSpeed :=        1.03
 Settings.Custom_BrakingFriction :=  0.10
 Settings.Custom_SpeedBoost :=       1.16
@@ -25,13 +25,16 @@ global LiveExclusionMap := Map() ; The internal engine ONLY reads application bl
 
 global Profiles := Map(
     "Slow",        {BaseSpeed: 0.84, BrakingFriction: 0.14, SpeedBoost: 0.60},
-    "Precise",     {BaseSpeed: 1.00, BrakingFriction: 0.16, SpeedBoost: 1.06},
-    "Default",     {BaseSpeed: 1.08, BrakingFriction: 0.10, SpeedBoost: 1.14},
+    "Precise",     {BaseSpeed: 0.216, BrakingFriction: 0.15, SpeedBoost: 6.595},
+    "Delicate",     {BaseSpeed: 0.501, BrakingFriction: 0.087, SpeedBoost: 1.339},
+    "Default",     {BaseSpeed: 1.080, BrakingFriction: 0.100, SpeedBoost: 1.140},
     "Fast",        {BaseSpeed: 1.60, BrakingFriction: 0.10, SpeedBoost: 1.95},
     "Dry",         {BaseSpeed: 1.40, BrakingFriction: 0.20, SpeedBoost: 1.80},
     "Wet",         {BaseSpeed: 1.40, BrakingFriction: 0.06, SpeedBoost: 1.80},
     "Custom",      {BaseSpeed: 1.03, BrakingFriction: 0.10, SpeedBoost: 1.16}
 )
+
+ProfileNames := ["Slow", "Precise", "Delicate", "Default", "Fast", "Dry", "Wet", "Custom"]
 ;@endregion
 
 ;ResetSettings       := Settings.Clone()
@@ -57,6 +60,15 @@ SaveToINI.Push("Settings.ActiveProfile",
     "Settings.Custom_SpeedBoost")     ; add more to INI file
 RegisterArrayItems(SaveToINI)
 LoadINI()
+
+if !(Settings.TrayIconClick == 0 || Settings.TrayIconClick == 1) ; back compatibility
+{
+    Settings.TrayIconClick := 0
+    SaveINI()
+}
+
+
+
 GlobalActiveProfile := Settings.ActiveProfile
 ;KineticGui := 0
 

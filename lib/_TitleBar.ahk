@@ -2,7 +2,7 @@
  * @description Custom Title Bar (Isolated Window Messages)
  * @author Melo (melo@meloprofessional.com)
  * @date 2026/07/20
- * @version 1.5.0 (better close handle)
+ * @version 1.5.1 (title left)
  ***********************************************************************/
 
 /* HOW TO USE
@@ -64,7 +64,7 @@ class CustomTitleBar {
         guiObj.MarginY := 10
 
         ; 1. Draw Icon if enabled
-        currentX := 8
+        currentX := 16
         if (cfg.ShowIcon) {
             iconOpts := "X" currentX " Y" (cfg.Height-16)/2 " W16 H16"
             try {
@@ -82,7 +82,7 @@ class CustomTitleBar {
                 cfg.ShowIcon := false 
             }
             if (cfg.ShowIcon)
-                currentX += 24
+                currentX += 32
         }
 
         ; 2. Draw Optional Title Text
@@ -190,7 +190,7 @@ class CustomTitleBar {
         
         btnWidth := 46
         btnHeight := tb.Height
-        w := guiObj.HasProp("Width") ? guiObj.Width : 400
+        w := guiObj.HasProp("Width") ? guiObj.Width : 200
         
         if (cfg.Close) {
             btnX := "X" . (w - btnWidth)

@@ -3,19 +3,19 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/07/20
+ * @date 2026/07/24
  * @releasedate 2025/05/06
- * @version 3.3.2.0
+ * @version 3.4.0.141
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.3.2.0"
+AppVersion := "3.4.0.141"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
 
-;backupMode := "AppVersionAndMinutes"
+backupMode := "AppVersionAndMinutes"
 
 ;@region Directives
 #Requires AutoHotkey v2.0
@@ -44,7 +44,7 @@ A_HotkeyInterval := 1000
 #Include *i <_TitleBar>
 #Include *i <_ModernSlider>
 ;#Include *i <_Color_Picker_Dialog>
-;#Include *i <_ReloadWithArgs>
+#Include *i <_ReloadWithArgs>
 ;#Include *i <_HotkeysRecorder>
 ;#Include *i <_ODColors>
 #Include *i <_OSDCustom>
@@ -63,7 +63,7 @@ A_HotkeyInterval := 1000
 
 ;@region Startup
 ; SPLASHSCREEN
-if IsSet(SplashScreen){
+if IsSet(SplashScreen) && (A_Args.Length = 0) {
     SplashScreen()
 }
 
@@ -181,9 +181,9 @@ SaveSettings() {
     }
     Settings.Exclusions := (outStr == "") ? 0 : outStr
     
-    Settings.Custom_BaseSpeed := Round(Profiles["Custom"].BaseSpeed, 2)
-    Settings.Custom_BrakingFriction := Round(Profiles["Custom"].BrakingFriction, 2)
-    Settings.Custom_SpeedBoost := Round(Profiles["Custom"].SpeedBoost, 2)
+    Settings.Custom_BaseSpeed := Round(Profiles["Custom"].BaseSpeed, 3)
+    Settings.Custom_BrakingFriction := Round(Profiles["Custom"].BrakingFriction, 3)
+    Settings.Custom_SpeedBoost := Round(Profiles["Custom"].SpeedBoost, 3)
     
     ; 2. Commit the structural 'Settings' data downstream to the INI
     SaveINI()
@@ -236,6 +236,7 @@ ToggleSuspend(newHotkey := "", isGuiUpdate := false) {
 ;@endregion
 
 ;@region Main
+global HasScrolledThisGesture := false
 ShouldNormalizeScroll() {
     global LiveExclusionMap, KineticGui, AddAppsGui
     
@@ -262,27 +263,53 @@ ShouldNormalizeScroll() {
         procName := StrLower(WinGetProcessName(targetHwnd))
         
         ; Layer 2: Core Windows Interface & Desktop Protections
-        if (topClass == "Shell_SecondaryTrayWnd" || topClass == "Shell_TrayWnd" || topClass == "NewStartServer" || topClass == "Progman" || topClass == "WorkerW")
+        if (topClass == "Shell_SecondaryTrayWnd" || topClass == "Shell_TrayWnd" || topClass == "NewStartServer" || topClass == "Progman" || topClass == "WorkerW") {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 2 " A_TickCount)
+
+            Physics.Velocity := 0.0
+            Physics.MomentumReservoir := 0.0
             return false
-            
+}            
         ; Layer 3: Explicit User Exclusion List
         if LiveExclusionMap.Has(procName) || LiveExclusionMap.Has(StrLower(topClass)) {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 3 " A_TickCount)
             Physics.Velocity := 0.0
             Physics.MomentumReservoir := 0.0
             return false
         }
+
+
+        if procName == "windowsterminal.exe" {  ; Windows Terminal Settings
+;            ToolTip('terminal')
+            activeTitle := WinGetTitle(targetHwnd)
+            if activeTitle == "Settings"{
+                if !A_IsCompiled && Debug
+                    ToolTip("Layer 3.0 " A_TickCount)
+                Physics.Velocity := 0.0
+                Physics.MomentumReservoir := 0.0
+                return false
+            }
+        }
+
 
         ; ===================================================================
         ; WINUI 3 / XAML ISLAND POPUP BRIDGE SAFEGUARD
         ; ===================================================================
         ; If Microsoft's modern popup bridge is active on the screen, immediately
         ; yield and bypass physics so the OS handles the scroll naturally.
-        if WinExist("ahk_class Microsoft.UI.Content.PopupWindowSiteBridge") {
+        ;if WinExist("ahk_class Microsoft.UI.Content.PopupWindowSiteBridge") {
+        if topClass == "Microsoft.UI.Content.PopupWindowSiteBridge" {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 3.1 " A_TickCount)
+
             Physics.Velocity := 0.0
             Physics.MomentumReservoir := 0.0
             return false
         }
-        ; ===================================================================
+
+
 
         ; ===================================================================
         ; INTERACTIVE CONTROL BYPASS
@@ -293,6 +320,8 @@ ShouldNormalizeScroll() {
             ; --- AHK GUI CONTROL SAFEGUARD ---
             ; If the window is an AutoHotkey GUI, inspect the control's native AHK type
            if (topClass == "AutoHotkeyGUI" && (ctrlClass == "Static" || InStr(ctrlClass, "Slider"))) {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 3.2 " A_TickCount)
                 Physics.Velocity := 0.0
                 Physics.MomentumReservoir := 0.0
                 return false
@@ -307,11 +336,30 @@ ShouldNormalizeScroll() {
              || InStr(ctrlClass, "ScrollBar")        ; Individual scrollbar controls
              || topClass == "#32768")                ; Windows standard Popup Menus
             {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 3.3 " A_TickCount)
+
                 Physics.Velocity := 0.0
                 Physics.MomentumReservoir := 0.0
                 return false
             }
+
+/* 
+            if InStr(ctrlClass, "Windows.UI.Composition.DesktopWindowContentBridge") {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 3.4 " A_TickCount)
+
+                Physics.Velocity := 0.0
+                Physics.MomentumReservoir := 0.0
+                return false
+
+            }
+ */
+
         }
+
+
+
         ; ===================================================================
         
         ; Layer 4: AUTOMATIC FULLSCREEN GAME DETECTION
@@ -329,6 +377,9 @@ ShouldNormalizeScroll() {
                                  || InStr(topClass, "Chrome_") || InStr(topClass, "Mozilla"))
                  
                 if (!isScrollableApp) {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 4 " A_TickCount)
+
                     Physics.Velocity := 0.0
                     Physics.MomentumReservoir := 0.0
                     return false 
@@ -338,6 +389,9 @@ ShouldNormalizeScroll() {
         
         ; Layer 5: Universal Windows Platform (UWP) App Framework Blocks
         if (topClass == "ApplicationFrameWindow" || topClass == "Windows.UI.Core.CoreWindow" || InStr(topClass, "Windows.UI.XAML")) {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 5 " A_TickCount)
+
             return false
         }
     } catch {
@@ -347,12 +401,13 @@ ShouldNormalizeScroll() {
 }
 
 HandleScroll(Direction) {
-    global TargetTopHWnd, TargetCtrlHWnd, PackedLParam, ScrollMethod, AccV
+    global TargetTopHWnd, TargetCtrlHWnd, PackedLParam, ScrollMethod, AccV, HasScrolledThisGesture
     
     if (Direction > 0 && Physics.Velocity < 0) || (Direction < 0 && Physics.Velocity > 0) {
         Physics.Velocity := 0.0
         Physics.MomentumReservoir := 0.0
         AccV := 0.0
+        HasScrolledThisGesture := false ; <--- RESET ONLY ON DIRECTION REVERSAL
     }
     
     Physics.MomentumReservoir += 1.1
@@ -374,13 +429,17 @@ HandleScroll(Direction) {
     ScrollMethod := DetectMethod(TargetCtrlHWnd, TargetTopHWnd)
     Physics.Velocity += Direction * Physics.BaseSpeed * boostFactor
     
-    SetTimer PhysicsTick, 8 
+    SetTimer PhysicsTick, 8
 }
 
 DetectMethod(ctrlHwnd, topHwnd) {
     try {
         topClass := WinGetClass(topHwnd)
-        procName := WinGetProcessName(topHwnd)
+        procName := StrLower(WinGetProcessName(topHwnd))
+        
+        if (procName = "explorer.exe") {
+            return "ExplorerScroll"
+        }
         
         if (InStr(topClass, "Chrome_") || InStr(topClass, "Mozilla") || procName = "firefox.exe") {
             return "BrowserHighPrecision"
@@ -396,12 +455,13 @@ DetectMethod(ctrlHwnd, topHwnd) {
 }
 
 PhysicsTick() {
-    global TargetTopHWnd, TargetCtrlHWnd, PackedLParam, ScrollMethod, AccV
+    global TargetTopHWnd, TargetCtrlHWnd, PackedLParam, ScrollMethod, AccV, HasScrolledThisGesture
     
     if (!WinExist("ahk_id " TargetTopHWnd)) {
         Physics.Velocity := 0.0
         Physics.MomentumReservoir := 0.0
         AccV := 0.0
+        HasScrolledThisGesture := false ; <--- RESET ON STOP
         SetTimer , 0
         return
     }
@@ -413,15 +473,49 @@ PhysicsTick() {
         Physics.Velocity := 0.0
         Physics.MomentumReservoir := 0.0
         AccV := 0.0
+        HasScrolledThisGesture := false ; <--- RESET ON STOP
         SetTimer , 0
         return
     }
     
     AccV += Physics.Velocity
-    
+
+    if !A_IsCompiled && Debug
+        ToolTip(ScrollMethod)
+
     if (Abs(AccV) > 0.01) {
-;        ToolTip(ScrollMethod)
-        if (ScrollMethod = "PixelLV") {
+        if (ScrollMethod = "ExplorerScroll") {
+            global HasScrolledThisGesture
+            threshold := 4.0
+            notches := Integer(AccV / threshold)
+            
+            if (!HasScrolledThisGesture && Abs(AccV) >= 0.15) {
+                notches := (AccV > 0) ? 1 : -1
+                AccV -= (notches * threshold) 
+                HasScrolledThisGesture := true
+            } else if (notches != 0) {
+                AccV -= (notches * threshold)
+                HasScrolledThisGesture := true
+            }
+            
+            if (notches != 0) {
+                step := notches * 120
+                wParam := (step << 16) & 0xFFFFFFFF 
+                
+                try {
+                    PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetCtrlHWnd)
+                } catch {
+                    try WinActivate(TargetTopHWnd)
+                    try PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetCtrlHWnd)
+                }
+            }
+            
+            ; --- TAIL CONTROL (EXPLORER ONLY) ---
+            ; Multiplies the remaining velocity to force a faster stop.
+            ; 0.80 removes 20% of the remaining velocity every 8ms tick.
+            Physics.Velocity *= 0.9
+        }
+        else if (ScrollMethod = "PixelLV") {
             px := Integer(AccV * 4)
             if (px != 0) {
                 AccV -= (px / 4)
@@ -454,19 +548,55 @@ PhysicsTick() {
                 }
             }
         }
-        else { ; Win32HighPrecision || BrowserHighPrecision
+        else if (ScrollMethod = "BrowserHighPrecision") {
             step := Integer(AccV * 25)
             if (step != 0) {
                 AccV -= (step / 25)
                 wParam := (step << 16) & 0xFFFFFFFF 
                 try {
-                    PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " (ScrollMethod = "BrowserHighPrecision" ? TargetTopHWnd : TargetCtrlHWnd))
+                    PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetTopHWnd)
                 } catch {
                     try WinActivate(TargetTopHWnd)
-                    try PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " (ScrollMethod = "BrowserHighPrecision" ? TargetTopHWnd : TargetCtrlHWnd))
+                    try PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetTopHWnd)
+                }
+            }
+        }
+        else { ; Default Win32HighPrecision fallback
+            step := Integer(AccV * 25)
+            if !A_IsCompiled && Debug
+                ToolTip(ScrollMethod)
+
+            if (step != 0) {
+                AccV -= (step / 25)
+                wParam := (step << 16) & 0xFFFFFFFF 
+                try {
+                    PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetCtrlHWnd)
+                } catch {
+                    try WinActivate(TargetTopHWnd)
+                    try PostMessage(0x020A, wParam, PackedLParam,, "ahk_id " TargetCtrlHWnd)
                 }
             }
         }
     }
 }
 ;@endregion
+
+
+
+; CHECK RELOAD ARGUMENTS
+if (A_Args.Length > 0) {
+    targetFuncName := A_Args[1]
+    if !A_IsCompiled && Debug
+        ToolTip("reload with args " A_Args[1])
+    try {
+        if (A_Args.Length >= 2) {
+            %targetFuncName%(A_Args[2])
+        } else {
+            %targetFuncName%()
+        }
+    } catch Any as e {
+        ;MsgBoxCustom("Failed to execute dynamic call: " e.Message, App.Name)
+        MsgBoxCustom(,,,e)
+    }
+}
+

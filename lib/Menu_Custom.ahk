@@ -36,9 +36,9 @@ Menu_Custom() {
 
     global ProfileMenu := Menu()
 
-    profilesOrder := ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"]
+;    profilesOrder := ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"]
 
-    for profileName in profilesOrder {
+    for profileName in ProfileNames {
         ProfileMenu.Add(profileName, OnTrayProfileSelect)
     }
 
@@ -55,7 +55,7 @@ Menu_Custom() {
         ; 0x201 = WM_LBUTTONDOWN (Single left click)
         ; 0x203 = WM_LBUTTONDBLCLK (Double left click)
         if (lParam = 0x201 || lParam = 0x203) {
-            if (Settings.TrayIconClick == "Settings") {
+            if (Settings.TrayIconClick == false) {
                 ShowKineticGUI()
             } else {
                 ToggleSuspend()
