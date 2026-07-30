@@ -13,26 +13,40 @@ ShowHelpGUI() {
     MyGui := Gui(MyGuiOptions, MyGuiTitle)
     MyGui.SetFont("s" Settings.GuiFontSizeMedium, Settings.GuiFontName)
 
+    if IsFunctionDefined("CustomTitleBar") {
+        MyGui.Opt("-Caption")
+        titlebar := %"CustomTitleBar"%.Attach(MyGui, {
+            Title: MyGuiTitle,
+            ShowIcon: false,
+            Min: true,
+            Max: false,
+            Close: true
+        })
+        offset := 60
+        DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", MyGui.Hwnd, "UInt", 33, "Int*", 2, "UInt", 4)
+    }
+
     ; Define layout constants
-    GuiWidth            := 720
-    BtnWidth            := 80
+    GuiWidth            := 480
+    BtnWidth            := 100
     MyGui.MarginX       := 50
     MyGui.MarginY       := 30
 
     ; 1. Icon
     try {
-        MyGui.Add("Picture", "w32 h32", App.Icon)
+        MyGui.Add("Picture", "xm y" offset " w32 h32", App.Icon)
     } catch {
         MyGui.SetFont("s15 w500")
-        MyGui.Add("Text", "w32 h32", "[ i ]")
+        MyGui.Add("Text", "y" offset " w32 h32", "[ i ]")
     }
 
     ; 2. Title and Version
     MyGui.SetFont("s" Settings.GuiFontSizeBig " w700")
-    MyGui.Add("Text", "x+15 y28 vStrong_Title", App.Name)
+    MyGui.Add("Text", "x+15 yp vStrong_Title", App.Name)
 
     MyGui.SetFont("s" Settings.GuiFontSizeSmall " w400 ")
     MyGui.Add("Text", "y+2 vSmooth_Version", "Version " App.Version)
+
 
     ; 3. Content
     MyGui.SetFont("s" Settings.GuiFontSizeBig " w300")
@@ -40,8 +54,8 @@ ShowHelpGUI() {
     MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Open the main interface to fine-tune speed, acceleration and breaking.")
     MyGui.Add("Text", "xm y+25 w" . (GuiWidth - (MyGui.MarginX * 2)), "- Exclude specific applications or programs that do not comfortably support smooth scrolling.")
 
-    MyGui.SetFont("s" Settings.GuiFontSizeMedium " w300")
-    MyGui.Add("Text", "xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "*Press ScrollLock to pause/ activate " . App.Name . ".")
+    MyGui.SetFont("s" Settings.GuiFontSizeMedium " w100")
+    MyGui.Add("Text", "vSmooth_PS xm y+50 w" . (GuiWidth - (MyGui.MarginX * 2)), "*Use hotkey to pause/ activate " . App.Name . ".")
 ;    MyGui.Add("Text", "xm y+30 w" . (GuiWidth - (MyGui.MarginX * 2)))
 
     ; 4. Button
