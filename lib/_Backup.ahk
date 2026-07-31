@@ -2,7 +2,7 @@
  * @description Automatic Backup and Compilation Manager for AHK v2.
  * @author Melo (melo@meloprofessional.com) and Pj
  * @date 2026/07/30
- * @version 1.6.100
+ * @version 1.6.0
  * 
  * FEATURES:
  * - Creates an isolated '.versions\' directory automatically inside A_ScriptDir.

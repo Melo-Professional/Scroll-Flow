@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/07/30
+ * @date 2026/08/01
  * @releasedate 2025/05/06
- * @version 3.4.102.0
+ * @version 3.4.104.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.4.102.0"
+AppVersion := "3.4.104.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -88,7 +88,7 @@ if Settings.UseHotKey {
 
 ;@region Helper Funcs
 ; OSD
-SFOSD := OSDCustom("Another OSD with default settings")
+SFOSD := OSDCustom()
 Show_OSD(label) {
     SFOSD.ClearCells()
     SFOSD.SetCellImage( 1, 1, App.Icon, "Left", 16, 1, 1)
@@ -102,12 +102,37 @@ Show_OSD(label) {
     }
 }
 
-SoundPlayWin(sound := "Windows Notify", timer := 3000) {
-  try SoundPlay(A_WinDir "\Media\" sound ".wav")
-  SetTimer(ReleaseFile,-timer)
-  ReleaseFile(){
-    try SoundPlay("NON-EXISTENT.wav")
+/* 
+SoundPlayWin(audiofile := "Windows Notify", timer := 3000) {
+
+    if !InStr(audiofile, "\")
+        audiofile := A_WinDir "\Media\" audiofile ".wav"
+
+    try SoundPlay(audiofile)
+    SetTimer(ReleaseFile,-timer)
+    ReleaseFile(){
+    try SoundPlay("NON-EXISTENT.wav")  ; releases previously played file from "in use"
   }
+}
+ */
+
+SoundPlayWin(audiofile := "Windows Notify", timer := 3000) {
+    ; If relative/short name passed, resolve to standard Windows Media path
+    if !InStr(audiofile, "\")
+        audiofile := A_WinDir "\Media\" audiofile ".wav"
+
+    ; SND_FILENAME (0x20000) | SND_ASYNC (0x1) | SND_NODEFAULT (0x2) = 0x20003
+    ; Plays sound in background and avoids error beeps if file is missing
+    try DllCall("Winmm.dll\PlaySoundW", "Str", audiofile, "Ptr", 0, "UInt", 0x20003)
+
+    ; Schedule file release if timer is provided
+    if (timer > 0)
+        SetTimer(ReleaseFile, -timer)
+
+    ReleaseFile() {
+        ; Passing 0 as the path cleanly stops playback and releases file handles
+        try DllCall("Winmm.dll\PlaySoundW", "Ptr", 0, "Ptr", 0, "UInt", 0x0)
+    }
 }
 
 SyncEngineFromSettings() {

@@ -24,14 +24,14 @@ global GlobalActiveProfile := "Default"
 global LiveExclusionMap := Map() ; The internal engine ONLY reads application blocks from this map
 
 global Profiles := Map(
-    "Slow",        {BaseSpeed: 0.84, BrakingFriction: 0.14, SpeedBoost: 0.60},
-    "Precise",     {BaseSpeed: 0.216, BrakingFriction: 0.15, SpeedBoost: 6.595},
-    "Delicate",     {BaseSpeed: 0.501, BrakingFriction: 0.087, SpeedBoost: 1.339},
-    "Default",     {BaseSpeed: 1.080, BrakingFriction: 0.100, SpeedBoost: 1.140},
-    "Fast",        {BaseSpeed: 1.60, BrakingFriction: 0.10, SpeedBoost: 1.95},
-    "Dry",         {BaseSpeed: 1.40, BrakingFriction: 0.20, SpeedBoost: 1.80},
-    "Wet",         {BaseSpeed: 1.40, BrakingFriction: 0.06, SpeedBoost: 1.80},
-    "Custom",      {BaseSpeed: 1.03, BrakingFriction: 0.10, SpeedBoost: 1.16}
+    "Slow",			{BaseSpeed: 0.840, BrakingFriction: 0.140, SpeedBoost: 0.600},
+    "Precise",		{BaseSpeed: 0.216, BrakingFriction: 0.150, SpeedBoost: 6.595},
+    "Delicate",		{BaseSpeed: 0.287, BrakingFriction: 0.092, SpeedBoost: 2.868},
+    "Default",		{BaseSpeed: 1.080, BrakingFriction: 0.100, SpeedBoost: 1.140},
+    "Fast",			{BaseSpeed: 1.600, BrakingFriction: 0.100, SpeedBoost: 1.950},
+    "Dry",			{BaseSpeed: 1.400, BrakingFriction: 0.200, SpeedBoost: 1.800},
+    "Wet",			{BaseSpeed: 1.400, BrakingFriction: 0.060, SpeedBoost: 1.800},
+    "Custom",		{BaseSpeed: 1.030, BrakingFriction: 0.100, SpeedBoost: 1.160}
 )
 
 ProfileNames := ["Slow", "Precise", "Delicate", "Default", "Fast", "Dry", "Wet", "Custom"]
