@@ -21,8 +21,9 @@ StartAutoUpdater() {
 
 for arg in A_Args {
 	if RegExMatch(arg, "i)^--signal-update-success=(.+)$", &match) {
-		signalFileUpdate := Trim(match[1], '"')
-		try FileOpen(signalFileUpdate, "w").Write("OK")
+		;signalFileUpdate := Trim(match[1], '"')
+		signalFile := Trim(match[1], '"')
+		try FileOpen(signalFile, "w").Write("OK")
 		break
 	}
 }
@@ -280,7 +281,7 @@ class AutoUpdater {
         }
 
         cmdScript := A_Temp . "\ahk_updater_" . A_TickCount . ".cmd"
-        signalFile := A_Temp . "\ahk_upd_ok_" . A_TickCount . ".tmp"
+        global signalFile := A_Temp . "\ahk_upd_ok_" . A_TickCount . ".tmp"
         pid := ProcessExist()
         
         if !RegExMatch(newExeName, "i)\.(exe|ahk)$") {

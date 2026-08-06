@@ -5,17 +5,17 @@
  * @author Melo (melo@meloprofessional.com)
  * @date 2026/08/06
  * @releasedate 2025/05/06
- * @version 3.5.0.0
+ * @version 3.5.0.102
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.0.0"
+AppVersion := "3.5.0.102"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
 
-;_bkpMode := "AppVersionAndMinutes"
+_bkpMode := "AppVersionAndMinutes"
 
 ;@region Directives
 #Requires AutoHotkey v2.0
@@ -613,7 +613,7 @@ PhysicsTick() {
 
 
 ; CHECK RELOAD ARGUMENTS
-if (A_Args.Length > 0) {
+if (A_Args.Length > 0) && !RegExMatch(A_Args[1], "i)^--signal-update-success=") {
     targetFuncName := A_Args[1]
     if !A_IsCompiled && Debug
         ToolTip("reload with args " A_Args[1])
