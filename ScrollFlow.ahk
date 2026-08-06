@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/01
+ * @date 2026/08/06
  * @releasedate 2025/05/06
- * @version 3.4.104.0
+ * @version 3.5.0.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.4.104.0"
+AppVersion := "3.5.0.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -48,6 +48,7 @@ A_HotkeyInterval := 1000
 ;#Include *i <_HotkeysRecorder>
 ;#Include *i <_ODColors>
 #Include *i <_OSDCustom>
+#Include *i <_AutoUpdater>
 ;#Include *i <_Color_Picker_Dialog_>
 #Include *i <_HotkeysRecorder>
 #Include *i <_SplashScreen>
@@ -70,6 +71,9 @@ if IsSet(SplashScreen) && (A_Args.Length = 0) {
 ; TRAY ICON + MENU
 StartMenu()
 Menu_Custom()
+if IsSet(StartAutoUpdater) {
+	%"StartAutoUpdater"%()
+}
 ;@endregion
 
 ; Execute the bridge mapping
@@ -79,9 +83,9 @@ if IsSet(FirstRun) && FirstRun{
     ShowKineticGUI()
 }
 
-if Settings.UseHotKey {
-    SetScrollLockState "On"
-}
+;if Settings.UseHotKey {
+;    SetScrollLockState "On"
+;}
 
 ;@endregion
 

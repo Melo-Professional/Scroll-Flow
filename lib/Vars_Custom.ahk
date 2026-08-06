@@ -1,8 +1,8 @@
 /************************************************************************
  * @description Vars_Custom
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/06/08
- * @version 1.0.0
+ * @date 2026/08/06
+ * @version 1.2.0
  ***********************************************************************/
 
 ;@region VARS
@@ -43,6 +43,13 @@ ProfileNames := ["Slow", "Precise", "Delicate", "Default", "Fast", "Dry", "Wet",
 ;ResetOSDSettings    := OSDSettings.Clone()
 
 App.Github := "https://github.com/Melo-Professional/Scroll-Flow"
+if (App.HasOwnProp("Github")  && App.Github != "" && App.Github != "https://github.com/Melo-Professional/") {
+	App.UpdateAuto := true
+	App.UpdateFrequencyDays := 3
+	App.UpdateLastCheck := ""
+	SaveToINI.Push("App.UpdateAuto", "App.UpdateFrequencyDays", "App.UpdateLastCheck")
+}
+
 ;App.NameCutted := "Template`nBigName"
 ;Settings.SplashScreen := "Icon"
 ;Debug := true
