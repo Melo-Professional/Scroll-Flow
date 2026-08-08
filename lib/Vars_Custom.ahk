@@ -48,6 +48,8 @@ if (App.HasOwnProp("Github")  && App.Github != "" && App.Github != "https://gith
 	App.UpdateFrequencyDays := 3
 	App.UpdateLastCheck := ""
 	SaveToINI.Push("App.UpdateAuto", "App.UpdateFrequencyDays", "App.UpdateLastCheck")
+	RegisterArrayItems(SaveToINI)
+	LoadINI()
 }
 
 ;App.NameCutted := "Template`nBigName"

@@ -254,7 +254,8 @@ KineticGui.SetFont("s9 cDefault Norm", "Segoe UI")
                 style := WinGetStyle(hwnd)
                 pName := WinGetProcessName(hwnd)
                 
-                if (title != "" && (style & 0x10000000) && pName != "explorer.exe" && !InStr(pName, "AutoHotkey")) {
+                ;if (title != "" && (style & 0x10000000) && pName != "explorer.exe" && !InStr(pName, "AutoHotkey")) {
+                if (title != "" && (style & 0x10000000) && !InStr(pName, "AutoHotkey")) {
                     if !addedProcesses.Has(StrLower(pName)) {
                         addedProcesses[StrLower(pName)] := true
                         CatalogListBox.Add(, pName, title)

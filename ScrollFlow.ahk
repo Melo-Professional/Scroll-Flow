@@ -3,19 +3,19 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/06
+ * @date 2026/08/08
  * @releasedate 2025/05/06
- * @version 3.5.0.102
+ * @version 3.5.2.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.0.102"
+AppVersion := "3.5.2.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
 
-_bkpMode := "AppVersionAndMinutes"
+;_bkpMode := "AppVersionAndMinutes"
 
 ;@region Directives
 #Requires AutoHotkey v2.0
@@ -93,32 +93,23 @@ if IsSet(FirstRun) && FirstRun{
 ;@region Helper Funcs
 ; OSD
 SFOSD := OSDCustom()
+SFOSD.FontSize := 9
+SFOSD.FontWeight := 400
+SFOSD.TimeOut := 3000
+SFOSD.Position := "x0.90 y0.93"
+SFOSD.SetCellImage( 1, 1, App.Icon, "Left", 16)
+msg := SFOSD.SetCellText( 2, 1, App.Name, "Left")
+
 Show_OSD(label) {
-    SFOSD.ClearCells()
-    SFOSD.SetCellImage( 1, 1, App.Icon, "Left", 16, 1, 1)
-    msg := SFOSD.SetCellText( 2, 1, label, "Center", {FontSize: 9, FontWeight: 300})
-    SFOSD.SetCellText( 3, 1, "   ", "Right", {FontSize: 8, FontWeight: 500})
+	global msg
+
     if SFOSD.IsVisible{
         SFOSD.UpdateTextObject( msg, label, 3300)
-        return
     } else {
-        SFOSD.Show(,"x0.90 y0.95", 3000)
+		SFOSD.UpdateTextObject( msg, label)
+        SFOSD.Show()
     }
 }
-
-/* 
-SoundPlayWin(audiofile := "Windows Notify", timer := 3000) {
-
-    if !InStr(audiofile, "\")
-        audiofile := A_WinDir "\Media\" audiofile ".wav"
-
-    try SoundPlay(audiofile)
-    SetTimer(ReleaseFile,-timer)
-    ReleaseFile(){
-    try SoundPlay("NON-EXISTENT.wav")  ; releases previously played file from "in use"
-  }
-}
- */
 
 SoundPlayWin(audiofile := "Windows Notify", timer := 3000) {
     ; If relative/short name passed, resolve to standard Windows Media path

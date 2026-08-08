@@ -2,7 +2,7 @@
  * @description Autod Updater
  * @author Melo (melo@meloprofessional.com)
  * @date 2026/08/06
- * @version 1.3.0
+ * @version 1.3.1
  ***********************************************************************/
 
 #Requires AutoHotkey v2.0
@@ -494,7 +494,7 @@ class AutoUpdater {
 		hasUpdate := (this.LatestVersion != "" && this.IsNewerVersion(this.App.Version, this.LatestVersion))
 
 		MyGuiTitle := App.Name . " - Update"
-		MyGuiOptions := "+LastFound -SysMenu"
+		MyGuiOptions := "+LastFound"
 		MyGui := Gui(MyGuiOptions, MyGuiTitle)
 		MyGui.SetFont("s" Settings.GuiFontSizeMedium, Settings.GuiFontName)
 		offset := 10
