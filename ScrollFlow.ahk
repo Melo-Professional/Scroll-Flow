@@ -5,12 +5,12 @@
  * @author Melo (melo@meloprofessional.com)
  * @date 2026/08/09
  * @releasedate 2025/05/06
- * @version 3.5.4.0
+ * @version 3.5.4.100
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.4.0"
+AppVersion := "3.5.4.100"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -80,9 +80,9 @@ if IsSet(StartAutoUpdater) {
 SyncEngineFromSettings()
 
 if IsSet(FirstRun) && FirstRun {
-	if (A_Args.Length > 0) && !RegExMatch(A_Args[1], "i)^--signal-update-success=") {
-    ShowKineticGUI()
-	}
+    if (A_Args.Length == 0 || !RegExMatch(A_Args[1], "i)^--signal-update-success=")) {
+        ShowKineticGUI()
+    }
 }
 
 ;if Settings.UseHotKey {
