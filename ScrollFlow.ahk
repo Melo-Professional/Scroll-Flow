@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/09
+ * @date 2026/08/10
  * @releasedate 2025/05/06
- * @version 3.5.4.100
+ * @version 3.5.6.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.4.100"
+AppVersion := "3.5.6.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -96,10 +96,13 @@ if IsSet(FirstRun) && FirstRun {
 ; OSD
 SFOSD := OSDCustom()
 SFOSD.FontSize := 9
-SFOSD.FontWeight := 400
+SFOSD.FontWeight := 500
 SFOSD.TimeOut := 3000
+SFOSD.MarginX := 10
+SFOSD.MarginY := 12
+SFOSD.RowGap := 16
 SFOSD.Position := "x0.90 y0.93"
-SFOSD.SetCellImage( 1, 1, App.Icon, "Left", 16)
+SFOSD.SetCellImage( 1, 1, App.Icon, "Center", 16)
 msg := SFOSD.SetCellText( 2, 1, App.Name, "Left")
 
 Show_OSD(label) {
@@ -292,7 +295,19 @@ ShouldNormalizeScroll() {
             Physics.Velocity := 0.0
             Physics.MomentumReservoir := 0.0
             return false
-}            
+		}
+
+		; Windows Control Center (Win + A)
+        if (topClass == "ControlCenterWindow") {
+            if !A_IsCompiled && Debug
+                ToolTip("Layer 2.1 " A_TickCount)
+
+            Physics.Velocity := 0.0
+            Physics.MomentumReservoir := 0.0
+            return false
+		}
+
+
         ; Layer 3: Explicit User Exclusion List
         if LiveExclusionMap.Has(procName) || LiveExclusionMap.Has(StrLower(topClass)) {
             if !A_IsCompiled && Debug
@@ -316,6 +331,7 @@ ShouldNormalizeScroll() {
         }
 
 
+
         ; ===================================================================
         ; WINUI 3 / XAML ISLAND POPUP BRIDGE SAFEGUARD
         ; ===================================================================
@@ -330,7 +346,6 @@ ShouldNormalizeScroll() {
             Physics.MomentumReservoir := 0.0
             return false
         }
-
 
 
         ; ===================================================================
