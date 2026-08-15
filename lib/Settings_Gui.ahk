@@ -123,7 +123,7 @@ KineticGui.SetFont("s9 cDefault Norm", "Segoe UI")
     KineticGui.AddGroupBox("x475 y506 w320 h70", "Turbo")
 	KineticGui.SetFont("s9 Norm cDefault ", "Segoe UI")
     optUseTurboKey := KineticGui.Add("Checkbox", "x495 y536 w220", "  Hold ALT to Turbo Scroll")
-    optUseTurboKey.Value := Settings.TrayIconClick
+    optUseTurboKey.Value := Settings.UseTurboKey
 	optUseTurboKey.OnEvent("Click", (*) => Settings.UseTurboKey := optUseTurboKey.Value)
 
 
