@@ -81,10 +81,10 @@ ShowKineticGUI() {
     KineticGui.AddGroupBox("x20 y530 w430 h110", "Pause / Activate")
 
 ;    KineticGui.SetFont("s9 cDefault w300", "Segoe UI")
-KineticGui.SetFont("s9 Norm cDefault ", "Segoe UI")
+	KineticGui.SetFont("s9 Norm cDefault ", "Segoe UI")
     optLeftClick := KineticGui.Add("Checkbox", "x40 y565 w220", "  With left click at tray icon")
     optLeftClick.Value := Settings.TrayIconClick
-optLeftClick.OnEvent("Click", ActionsLeftClickIcon)
+	optLeftClick.OnEvent("Click", ActionsLeftClickIcon)
 
 
     KineticGui.AddText("x40 y600 h25 0x0200", "With Hotkey:    ")
@@ -104,18 +104,31 @@ optLeftClick.OnEvent("Click", ActionsLeftClickIcon)
 KineticGui.SetFont("s10 cDefault Norm", "Segoe UI")
 
     ; ---------------- RIGHT COLUMN: EXCLUSION INTERFACE ----------------
-    KineticGui.AddGroupBox("x475 y15 w320 h575", "Exceptions")
+    ;KineticGui.AddGroupBox("x475 y15 w320 h575", "Exceptions")
+    KineticGui.AddGroupBox("x475 y15 w320 h475", "Exceptions")
 
 KineticGui.SetFont("s9 cDefault Norm", "Segoe UI")
     KineticGui.AddText("x495 y45 w280", "Do not apply scroll effect to the programs below:")
-    ExclusionBox := KineticGui.AddListBox("x495 y88 w280 h445")
+    ExclusionBox := KineticGui.AddListBox("x495 y88 w280 h345")
     
-    BtnAddCatalog := KineticGui.AddButton("x495 y535 w135 h30", "&Add...")
+    BtnAddCatalog := KineticGui.AddButton("x495 y435 w135 h30", "&Add...")
     BtnAddCatalog.OnEvent("Click", OpenAppCatalogModal)
     
-    BtnRem := KineticGui.AddButton("x640 y535 w135 h30", "&Remove")
+    BtnRem := KineticGui.AddButton("x640 y435 w135 h30", "&Remove")
     BtnRem.OnEvent("Click", RemoveTargetFromExclusions)
     
+
+
+    ; ---------------- TURBO BUTTON ----------------
+    KineticGui.AddGroupBox("x475 y506 w320 h70", "Turbo")
+	KineticGui.SetFont("s9 Norm cDefault ", "Segoe UI")
+    optUseTurboKey := KineticGui.Add("Checkbox", "x495 y536 w220", "  Hold ALT to Turbo Scroll")
+    optUseTurboKey.Value := Settings.TrayIconClick
+	optUseTurboKey.OnEvent("Click", (*) => Settings.UseTurboKey := optUseTurboKey.Value)
+
+
+
+
     ; ---------------- BOTTOM ALIGNED ACTIONS ----------------
     BtnSave := KineticGui.AddButton("x645 y610 w150 h30 +Default", "&Save")
     BtnSave.OnEvent("Click", CommitChangesToIni)

@@ -5,12 +5,12 @@
  * @author Melo (melo@meloprofessional.com)
  * @date 2026/08/15
  * @releasedate 2025/05/06
- * @version 3.5.8.0
+ * @version 3.6.0.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.8.0"
+AppVersion := "3.6.0.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -201,6 +201,11 @@ SaveSettings() {
 #HotIf ShouldNormalizeScroll()
 $WheelUp::   HandleScroll(1)
 $WheelDown:: HandleScroll(-1)
+#HotIf
+
+#HotIf Settings.UseTurboKey
+$!WheelUp::   HandleScroll(2)
+$!WheelDown:: HandleScroll(-2)
 #HotIf
 
 if (Settings.HotKey != "") {

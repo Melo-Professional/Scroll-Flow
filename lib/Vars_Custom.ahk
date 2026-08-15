@@ -19,6 +19,7 @@ Settings.Exclusions := "mspaint.exe,powertoys.exe,steamwebhelper.exe,voicemeeter
 Settings.Custom_BaseSpeed :=        1.03
 Settings.Custom_BrakingFriction :=  0.10
 Settings.Custom_SpeedBoost :=       1.16
+Settings.UseTurboKey :=       true
 
 global GlobalActiveProfile := "Default"
 global LiveExclusionMap := Map() ; The internal engine ONLY reads application blocks from this map
@@ -63,6 +64,7 @@ SaveToINI.Push("Settings.ActiveProfile",
     "Settings.TrayIconClick",
     "Settings.UseHotKey",
     "Settings.HotKey",
+    "Settings.UseTurboKey",
     "Settings.Exclusions",
     "Settings.Custom_BaseSpeed",
     "Settings.Custom_BrakingFriction",

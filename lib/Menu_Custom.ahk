@@ -13,40 +13,34 @@ Menu_Custom() {
     try MoreMenu.Delete("Light")
     try MoreMenu.Delete("Dark")
     try MoreMenu.Delete("Auto")
-;    try MoreMenu.Delete("1&")
-;    try MoreMenu.Delete("2&")
-;    try MoreMenu.Delete("3&")
     try MoreMenu.Delete("Pause")
     try MoreMenu.Delete("Suspend")
 
-    TrayMenu.Insert("Restart", "")
+;    TrayMenu.Insert("Restart", "")
 
     if A_IsCompiled {
         try TrayMenu.Delete("Restart")
         try MoreMenu.Delete("Explore")
     }
 
-;    TrayMenu.Insert("Pause`tScrollLock", "")
-    ;TrayMenu.Insert("Exit", "Pause`tScrollLock", (*) => ToggleSuspend())
     TrayMenu.Insert("Exit", "Pause", (*) => ToggleSuspend())
 
-    global OptionsMenu := Menu()
-    A_TrayMenu.OptionsMenu := OptionsMenu
-    OptionsMenu.Add("Settings...", (*) => ShowKineticGUI())
+;    global OptionsMenu := Menu()
+;    A_TrayMenu.OptionsMenu := OptionsMenu
+;    OptionsMenu.Add("Settings...", (*) => ShowKineticGUI())
 
     global ProfileMenu := Menu()
-
-;    profilesOrder := ["Slow", "Precise", "Default", "Fast", "Dry", "Wet", "Custom"]
-
     for profileName in ProfileNames {
         ProfileMenu.Add(profileName, OnTrayProfileSelect)
     }
 
     try ProfileMenu.Check(GlobalActiveProfile)
 
-    TrayMenu.Insert("More","Options", OptionsMenu)
-    OptionsMenu.Add("Profiles", ProfileMenu)
-
+;    TrayMenu.Insert("More","Options", OptionsMenu)
+    ;OptionsMenu.Add("Profiles", ProfileMenu)
+    TrayMenu.Insert("More","Settings...",  (*) => ShowKineticGUI())
+    TrayMenu.Insert("More","Profiles", ProfileMenu)
+    TrayMenu.Insert("More")
 
 ; --- FIX: ONMESSAGE LEFT-CLICK ONLY ---
     OnMessage(0x404, TrayIconClick)  ; WM_TRAYICON = 0x404
