@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/12
+ * @date 2026/08/15
  * @releasedate 2025/05/06
- * @version 3.5.6.100
+ * @version 3.5.8.0
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.5.6.100"
+AppVersion := "3.5.8.0"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -36,15 +36,16 @@ A_HotkeyInterval := 1000
 ;@region Includes
 #Include *i <_CompilerDirectives>
 #Include *i <_Backup>
+#Include *i <_HelperFuncs>
 #Include *i <_Config&Vars>
-#Include *i <_MsgBoxCustom>
 #Include *i <_SaveSettings>
 #Include *i <_Theme>
 ;#Include *i <_FrostedTheme>
 #Include *i <_TitleBar>
+#Include *i <_GuiTracker>
 #Include *i <_ModernSlider>
 ;#Include *i <_Color_Picker_Dialog>
-#Include *i <_ReloadWithArgs>
+;#Include *i <_ReloadWithArgs>
 ;#Include *i <_HotkeysRecorder>
 ;#Include *i <_ODColors>
 #Include *i <_OSDCustom>
@@ -113,25 +114,6 @@ Show_OSD(label) {
     } else {
 		SFOSD.UpdateTextObject( msg, label)
         SFOSD.Show()
-    }
-}
-
-SoundPlayWin(audiofile := "Windows Notify", timer := 3000) {
-    ; If relative/short name passed, resolve to standard Windows Media path
-    if !InStr(audiofile, "\")
-        audiofile := A_WinDir "\Media\" audiofile ".wav"
-
-    ; SND_FILENAME (0x20000) | SND_ASYNC (0x1) | SND_NODEFAULT (0x2) = 0x20003
-    ; Plays sound in background and avoids error beeps if file is missing
-    try DllCall("Winmm.dll\PlaySoundW", "Str", audiofile, "Ptr", 0, "UInt", 0x20003)
-
-    ; Schedule file release if timer is provided
-    if (timer > 0)
-        SetTimer(ReleaseFile, -timer)
-
-    ReleaseFile() {
-        ; Passing 0 as the path cleanly stops playback and releases file handles
-        try DllCall("Winmm.dll\PlaySoundW", "Ptr", 0, "Ptr", 0, "UInt", 0x0)
     }
 }
 
@@ -621,19 +603,4 @@ PhysicsTick() {
 
 
 ; CHECK RELOAD ARGUMENTS
-if (A_Args.Length > 0) && !RegExMatch(A_Args[1], "i)^--signal-update-success=") {
-    targetFuncName := A_Args[1]
-    if !A_IsCompiled && Debug
-        ToolTip("reload with args " A_Args[1])
-    try {
-        if (A_Args.Length >= 2) {
-            %targetFuncName%(A_Args[2])
-        } else {
-            %targetFuncName%()
-        }
-    } catch Any as e {
-        ;MsgBoxCustom("Failed to execute dynamic call: " e.Message, App.Name)
-        MsgBoxCustom(,,,e)
-    }
-}
-
+CheckReloadArgs()
