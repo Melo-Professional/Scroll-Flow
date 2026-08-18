@@ -7,6 +7,9 @@
 
 ;@region VARS
 ; CUSTOM VARIABLES
+App.GitHubRepo			:= "https://github.com/Melo-Professional/Scroll-Flow"
+;App.NameCutted			:= "Template`nBigName"
+
 ; ==============================================================================
 ; --- PROFILES ---
 ; ==============================================================================
@@ -43,23 +46,14 @@ ProfileNames := ["Slow", "Precise", "Delicate", "Default", "Fast", "Dry", "Wet",
 ;ResetGeneral        := General.Clone()
 ;ResetOSDSettings    := OSDSettings.Clone()
 
-App.Github := "https://github.com/Melo-Professional/Scroll-Flow"
-if (App.HasOwnProp("Github")  && App.Github != "" && App.Github != "https://github.com/Melo-Professional/") {
-	App.UpdateAuto := true
-	App.UpdateFrequencyDays := 3
-	App.UpdateLastCheck := ""
-	SaveToINI.Push("App.UpdateAuto", "App.UpdateFrequencyDays", "App.UpdateLastCheck")
-	RegisterArrayItems(SaveToINI)
-	LoadINI()
-}
-
 ;App.NameCutted := "Template`nBigName"
 ;Settings.SplashScreen := "Icon"
 ;Debug := true
 ;@endregion
 
-
 ;@region INI
+SaveToINI := []
+;SaveToINI.Push("Settings.SplashScreen")     ; add more to INI file
 SaveToINI.Push("Settings.ActiveProfile",
     "Settings.TrayIconClick",
     "Settings.UseHotKey",
@@ -69,8 +63,17 @@ SaveToINI.Push("Settings.ActiveProfile",
     "Settings.Custom_BaseSpeed",
     "Settings.Custom_BrakingFriction",
     "Settings.Custom_SpeedBoost")     ; add more to INI file
-RegisterArrayItems(SaveToINI)
-LoadINI()
+
+if App.HasOwnProp("GitHubRepo")
+	SaveToINI.Push("App.UpdateAuto", "App.UpdateFrequencyDays", "App.UpdateLastCheck")
+if (IsSet(INIManager) && (SaveToINI != [])) {
+	IsSet(RegisterArrayItems) ? RegisterArrayItems(SaveToINI) : 0
+	IsSet(LoadINI) ? LoadINI() : 0
+}
+;@endregion
+
+
+
 
 if !(Settings.TrayIconClick == 0 || Settings.TrayIconClick == 1) ; back compatibility
 {

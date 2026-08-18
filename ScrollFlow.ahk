@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/15
+ * @date 2026/08/18
  * @releasedate 2025/05/06
- * @version 3.6.0.100
+ * @version 3.6.1.101
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.6.0.100"
+AppVersion := "3.6.1.101"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -36,9 +36,11 @@ A_HotkeyInterval := 1000
 ;@region Includes
 #Include *i <_CompilerDirectives>
 #Include *i <_Backup>
-#Include *i <_HelperFuncs>
-#Include *i <_Config&Vars>
 #Include *i <_SaveSettings>
+#Include *i <_Config&Vars>
+#Include *i <_HelperFuncs>
+;#Include *i <_MessageManager>
+;#Include *i <_TrayIconHandler>
 #Include *i <_Theme>
 ;#Include *i <_FrostedTheme>
 #Include *i <_TitleBar>
@@ -46,13 +48,12 @@ A_HotkeyInterval := 1000
 #Include *i <_ModernSlider>
 ;#Include *i <_Color_Picker_Dialog>
 ;#Include *i <_ReloadWithArgs>
-;#Include *i <_HotkeysRecorder>
+#Include *i <_HotkeysRecorder>
 ;#Include *i <_ODColors>
 #Include *i <_OSDCustom>
 #Include *i <_AutoUpdater>
-;#Include *i <_Color_Picker_Dialog_>
-#Include *i <_HotkeysRecorder>
 #Include *i <_SplashScreen>
+;#Include *i <_SplashOSD>
 #Include *i <_About>
 ;#Include *i <_Help>
 #Include *i <_Menu>
@@ -64,26 +65,31 @@ A_HotkeyInterval := 1000
 ;@endregion
 
 ;@region Startup
-; SPLASHSCREEN
-if IsSet(SplashScreen) && (A_Args.Length = 0) {
-    SplashScreen()
+if !A_Args.Length {
+	if IsSet(SplashScreen) {
+	    SplashScreen()
+	} else if isSet(SplashScreenOSD) {
+		SplashScreenOSD()
+	}
 }
 
-; TRAY ICON + MENU
-StartMenu()
-Menu_Custom()
-if IsSet(StartAutoUpdater) {
-	%"StartAutoUpdater"%()
-}
+IsSet(StartMenu) ? StartMenu() : 0
+IsSet(Menu_Custom) ? Menu_Custom() : 0
+IsSet(StartAutoUpdater) ? StartAutoUpdater() : 0
+;@endregion
 ;@endregion
 
 ; Execute the bridge mapping
 SyncEngineFromSettings()
-
+/* 
 if IsSet(FirstRun) && FirstRun {
     if (A_Args.Length == 0 || !RegExMatch(A_Args[1], "i)^--signal-update-success=")) {
         ShowKineticGUI()
     }
+}
+ */
+if IsSet(FirstRun) && FirstRun && !A_Args.Length {
+	ShowKineticGUI()
 }
 
 ;if Settings.UseHotKey {
@@ -228,21 +234,22 @@ ToggleSuspend(newHotkey := "", isGuiUpdate := false) {
     Physics.Velocity := 0.0
     Physics.MomentumReservoir := 0.0
 
-    if (Settings.IsScriptPaused) {
-        Show_OSD( App.Name " Paused")
-        SoundPlayWin("Speech Sleep")
-        try TrayMenu.Check("Pause`tScrollLock")
-    } else {
-        Show_OSD( App.Name " Active")
-        SoundPlayWin("Speech On")
-        try TrayMenu.Uncheck("Pause`tScrollLock")
-    }
         if (A_IsCompiled && (Settings.IsScriptPaused || A_IsSuspended))
             TraySetIcon(App.IconPaused, -207, true)
         else if (Settings.IsScriptPaused || A_IsSuspended)
             TraySetIcon(App.IconPaused, -207, true)
         else
         TraySetIcon(App.Icon,, true)
+
+    if (Settings.IsScriptPaused) {
+        SoundPlayWin("Speech Sleep")
+        try TrayMenu.Check("Pause`tScrollLock")
+        Show_OSD( App.Name " Paused")
+    } else {
+        SoundPlayWin("Speech On")
+        try TrayMenu.Uncheck("Pause`tScrollLock")
+        Show_OSD( App.Name " Active")
+    }
 }
 ;#HotIf
 ;@endregion
@@ -608,4 +615,4 @@ PhysicsTick() {
 
 
 ; CHECK RELOAD ARGUMENTS
-CheckReloadArgs()
+IsSet(CheckReloadArgs) ? CheckReloadArgs() : 0
