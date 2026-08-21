@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/18
+ * @date 2026/08/21
  * @releasedate 2025/05/06
- * @version 3.6.1.101
+ * @version 3.6.1.103
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.6.1.101"
+AppVersion := "3.6.1.103"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -350,14 +350,14 @@ ShouldNormalizeScroll() {
 
             ; --- AHK GUI CONTROL SAFEGUARD ---
             ; If the window is an AutoHotkey GUI, inspect the control's native AHK type
-           if (topClass == "AutoHotkeyGUI" && (ctrlClass == "Static" || InStr(ctrlClass, "Slider"))) {
+           if (topClass == "AutoHotkeyGUI" && ( ctrlClass == "Static" || InStr(ctrlClass, "Slider") || InStr(ctrlClass, "SysListView" ))) {
             if !A_IsCompiled && Debug
                 ToolTip("Layer 3.2 " A_TickCount)
                 Physics.Velocity := 0.0
                 Physics.MomentumReservoir := 0.0
                 return false
             }
-            
+
             ; Standard Non-AHK Control Exclusions
 
             if (InStr(ctrlClass, "msctls_trackbar")  ; Standard Win32 Sliders
@@ -386,6 +386,9 @@ ShouldNormalizeScroll() {
 
             }
  */
+
+
+
 
         }
 
