@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/08/21
+ * @date 2026/09/03
  * @releasedate 2025/05/06
- * @version 3.6.1.103
+ * @version 3.6.1.104
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.6.1.103"
+AppVersion := "3.6.1.104"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
