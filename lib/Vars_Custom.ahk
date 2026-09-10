@@ -72,7 +72,7 @@ if (IsSet(INIManager) && (SaveToINI != [])) {
 }
 ;@endregion
 
-
+Settings.Exclusions .= ",olk.exe,OpenWith.exe,mstsc.exe,photos.exe,powertoys.exe"
 
 
 if !(Settings.TrayIconClick == 0 || Settings.TrayIconClick == 1) ; back compatibility
