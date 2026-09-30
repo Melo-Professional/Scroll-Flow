@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/09/09
+ * @date 2026/09/29
  * @releasedate 2025/05/06
- * @version 3.6.1.105
+ * @version 3.6.1.106
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.6.1.105"
+AppVersion := "3.6.1.106"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -422,7 +422,7 @@ ShouldNormalizeScroll() {
         }
         
         ; Layer 5: Universal Windows Platform (UWP) App Framework Blocks
-        if (topClass == "ApplicationFrameWindow" || topClass == "Windows.UI.Core.CoreWindow" || InStr(topClass, "Windows.UI.XAML")) {
+        if (topClass == "ApplicationFrameWindow" || topClass == "Windows.UI.Core.CoreWindow" || InStr(topClass, "Windows.UI.XAML") || topClass == "XamlWindow") {
             if !A_IsCompiled && Debug
                 ToolTip("Layer 5 " A_TickCount)
 
