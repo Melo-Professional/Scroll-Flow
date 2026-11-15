@@ -3,14 +3,14 @@
 /************************************************************************
  * @description Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience.
  * @author Melo (melo@meloprofessional.com)
- * @date 2026/09/29
+ * @date 2026/11/15
  * @releasedate 2025/05/06
- * @version 3.6.1.106
+ * @version 3.6.1.114
  ***********************************************************************/
 
 AppName := "Scroll Flow"
 ;@Ahk2Exe-Let U_AppName = %A_PriorLine%
-AppVersion := "3.6.1.106"
+AppVersion := "3.6.1.114"
 ;@Ahk2Exe-Let U_Version = %A_PriorLine%
 AppDescription := '"Scroll Flow is a lightweight utility that enhances mouse scrolling with smoother movement, improved responsiveness, and refined acceleration behavior for a more natural navigation experience."'
 ;@endregion
@@ -88,6 +88,8 @@ if IsSet(FirstRun) && FirstRun {
     }
 }
  */
+
+
 if IsSet(FirstRun) && FirstRun && !A_Args.Length {
 	ShowKineticGUI()
 }
@@ -128,6 +130,13 @@ SyncEngineFromSettings() {
     
     ; 1. Pull the raw config values loaded into 'Settings' object
     GlobalActiveProfile := Settings.ActiveProfile
+
+	; 1.1 update default exclusion list	
+	if IsSet(FirstRun) && FirstRun {
+;		Settings.Exclusions .= ",_1.exe,stremio-shell-ng.exe"
+		Settings.Exclusions .= ExclusionsUpdate
+		SaveINI()
+	}
     
     ; 2. Parse the CSV exclusions string into a fast look-up Map
     LiveExclusionMap.Clear()
@@ -155,7 +164,11 @@ ApplyProfile(profileName) {
         
     ; 1. Remove checkmark from the previously active profile
     if IsSet(ProfileMenu) {
-        try ProfileMenu.Uncheck(GlobalActiveProfile)
+;        try ProfileMenu.Uncheck(GlobalActiveProfile)
+
+		for profileName in ProfileNames {
+	        try ProfileMenu.Uncheck(profileName)
+		}
     }
         
     GlobalActiveProfile := profileName

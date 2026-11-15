@@ -18,7 +18,7 @@ Settings.ActiveProfile := "Default"
 Settings.TrayIconClick := false
 Settings.UseHotKey := true
 Settings.HotKey := "ScrollLock"
-Settings.Exclusions := "mspaint.exe,powertoys.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe"
+Settings.Exclusions := "mspaint.exe,powertoys.exe,steamwebhelper.exe,voicemeeter8x64.exe,whatsapp.root.exe,olk.exe,OpenWith.exe,mstsc.exe,photos.exe,powertoys.exe,anydesk.exe,vmconnect.exe"
 Settings.Custom_BaseSpeed :=        1.03
 Settings.Custom_BrakingFriction :=  0.10
 Settings.Custom_SpeedBoost :=       1.16
@@ -72,7 +72,7 @@ if (IsSet(INIManager) && (SaveToINI != [])) {
 }
 ;@endregion
 
-Settings.Exclusions .= ",olk.exe,OpenWith.exe,mstsc.exe,photos.exe,powertoys.exe,anydesk.exe,vmconnect.exe"
+ExclusionsUpdate := ",unigetui.exe,stremio-shell-ng.exe,intelgraphicssoftware.exe"
 
 
 if !(Settings.TrayIconClick == 0 || Settings.TrayIconClick == 1) ; back compatibility
